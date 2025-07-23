@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  l3mon:
+    build: .
+    ports:
+      - "22533:22533"
+    environment:
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD_MD5=21232f297a57a5a743894a0e4a801fc3 # This is 'admin' in MD5
+    volumes:
+      - ./server/clientData:/usr/src/app/clientData

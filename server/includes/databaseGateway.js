@@ -7,8 +7,8 @@ const
 
 db.defaults({
     admin: {
-        username: 'admin',
-        password: '',
+        username: process.env.ADMIN_USERNAME || 'admin',
+        password: process.env.ADMIN_PASSWORD_MD5 || '',
         loginToken: '',
         logs: [],
         ipLog: []
@@ -46,5 +46,3 @@ module.exports = {
     maindb: db,
     clientdb: clientdb,
 };
-
-
