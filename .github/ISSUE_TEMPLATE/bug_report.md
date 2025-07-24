@@ -1,16 +1,11 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: ''
-labels: bug
+title: '[BUG] '
+labels: 'bug'
 assignees: ''
 
 ---
-
-**This is an issue with the**
-- [x] Server
-- [ ] Client
-- [ ] Other
 
 **Describe the bug**
 A clear and concise description of what the bug is.
@@ -19,7 +14,8 @@ A clear and concise description of what the bug is.
 Steps to reproduce the behavior:
 1. Go to '...'
 2. Click on '....'
-3. See error
+3. Scroll down to '....'
+4. See error
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
@@ -27,15 +23,24 @@ A clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Server Issue (please complete the following information):**
- - OS: [e.g. Linux, Windows]
- - OS Version: [e.g. Ubuntu, Windows 10]
- - Browser: [e.g. chrome, safari]
+**Environment (please complete the following information):**
+ - OS: [e.g. Ubuntu 20.04, Windows 10, macOS 12]
+ - Browser [e.g. chrome, safari]
+ - Version [e.g. 22]
+ - Docker version (if using Docker)
+ - Node.js version (if running locally)
 
-**Client Issue:**
- - Android Version: [e.g. Android 8]
+**Device Information (if mobile-related):**
+ - Device: [e.g. iPhone6, Samsung Galaxy S21]
+ - OS: [e.g. iOS8.1, Android 12]
+ - Browser [e.g. stock browser, safari]
+ - Version [e.g. 22]
 
-**Checklist**
- - [ ] Is this really an issue?
- - [ ] Have I looked at previous issues to see if this has already been addressed?
- - [ ] Have I used some initiative to try and solve the issue myself?
+**Additional context**
+Add any other context about the problem here.
+
+**Logs**
+If applicable, add relevant logs:
+```
+Paste logs here
+```

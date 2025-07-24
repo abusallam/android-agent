@@ -1,13 +1,15 @@
 const { Low, JSONFile } = require('lowdb');
 const path = require('path');
+const bcrypt = require('bcrypt');
+const CONST = require('./const');
 
 const mainDbAdapter = new JSONFile('./maindb.json');
 const db = new Low(mainDbAdapter);
 
 db.defaults({
     admin: {
-        username: process.env.ADMIN_USERNAME || 'admin',
-        password: process.env.ADMIN_PASSWORD_MD5 || '',
+        username: CONST.security.admin_user,
+        password: bcrypt.hashSync(CONST.security.admin_pass, CONST.security.bcrypt_rounds),
         loginToken: '',
         logs: [],
         ipLog: []

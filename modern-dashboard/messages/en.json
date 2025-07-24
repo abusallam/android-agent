@@ -1,0 +1,46 @@
+{
+  "common": {
+    "welcome": "Welcome back",
+    "admin": "Admin",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "devices": "Devices",
+    "locations": "Locations",
+    "logs": "Logs",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Android Agent",
+    "subtitle": "Device Management Dashboard",
+    "onlineDevices": "Online Devices",
+    "offlineDevices": "Offline Devices",
+    "gpsLocations": "GPS Locations",
+    "activeSessions": "Active Sessions",
+    "noDevicesOnline": "No devices online",
+    "noDevicesOffline": "No devices registered",
+    "devicesWillAppear": "Devices will appear here when they connect to the server.",
+    "previousDevices": "Previously connected devices will appear here.",
+    "quickActions": "Quick Actions",
+    "apkBuilder": "APK Builder",
+    "apkBuilderDesc": "Generate custom client APK",
+    "locationMap": "Location Map",
+    "locationMapDesc": "View device locations",
+    "systemLogs": "System Logs",
+    "systemLogsDesc": "View application logs",
+    "modernDashboard": "Modern Dashboard Active",
+    "modernDashboardDesc": "You're now using the modernized Next.js dashboard. The legacy system is still running on port 22533."
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "language": {
+    "english": "English",
+    "arabic": "العربية"
+  }
+}

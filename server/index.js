@@ -22,10 +22,28 @@ global.app = app;
 global.clientManager = clientManager;
 global.apkBuilder = apkBuilder;
 
-// spin up socket server
-const io = new Server(CONST.control_port, {
-    pingInterval: 30000
-});
+// spin up secure socket server
+const serverOptions = {
+    pingInterval: 30000,
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+};
+
+if (CONST.security.tls_enabled) {
+    const https = require('https');
+    const fs = require('fs');
+    serverOptions.https = {
+        key: fs.readFileSync(CONST.security.key_path),
+        cert: fs.readFileSync(CONST.security.cert_path)
+    };
+}
+
+const io = new Server(CONST.security.tls_enabled ? 
+    https.createServer(serverOptions.https) : CONST.control_port, 
+    serverOptions
+);
 
 io.on('connection', (socket) => {
     socket.emit('welcome');

@@ -1,7 +1,7 @@
 {
-  "name": "L3MON",
+  "name": "AndroidAgent",
   "version": "1.0.0",
-  "description": "L3MON - Remote Android Managment Suite",
+  "description": "Android Agent - Remote Android Managment Suite",
   "main": "index.js",
   "scripts": {
     "test": "node index.js"
@@ -9,6 +9,9 @@
   "author": "D3VL",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.1.1",
+    "redis": "^4.6.10",
+    "connect-redis": "^7.1.0",
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.6",
     "ejs": "^3.1.9",

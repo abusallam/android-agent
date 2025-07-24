@@ -1,13 +1,23 @@
 const path = require('path');
 
-exports.debug = false;
+exports.debug = process.env.NODE_ENV !== 'production';
 
-exports.web_port = 22533;
-exports.control_port = 22222;
+// Security Configuration
+exports.security = {
+    bcrypt_rounds: process.env.BCRYPT_ROUNDS || 12,
+    tls_enabled: process.env.TLS_ENABLED === 'true',
+    cert_path: process.env.TLS_CERT_PATH || '/app/certs/fullchain.pem',
+    key_path: process.env.TLS_KEY_PATH || '/app/certs/privkey.pem',
+    admin_user: process.env.ADMIN_USERNAME || "admin",
+    admin_pass: process.env.ADMIN_PASSWORD || "admin" // Will be bcrypted
+};
+
+exports.web_port = process.env.WEB_PORT || 22533;
+exports.control_port = process.env.CONTROL_PORT || 22222;
 
 // Paths
 exports.apkBuildPath = path.join(__dirname, '../assets/webpublic/build.apk')
-exports.apkSignedBuildPath = path.join(__dirname, '../assets/webpublic/L3MON.apk')
+exports.apkSignedBuildPath = path.join(__dirname, '../assets/webpublic/AndroidAgent.apk')
 
 exports.downloadsFolder = '/client_downloads'
 exports.downloadsFullPath = path.join(__dirname, '../assets/webpublic', exports.downloadsFolder)

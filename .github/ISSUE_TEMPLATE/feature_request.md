@@ -1,8 +1,8 @@
 ---
 name: Feature request
 about: Suggest an idea for this project
-title: ''
-labels: Feature Request
+title: '[FEATURE] '
+labels: 'enhancement'
 assignees: ''
 
 ---
@@ -18,3 +18,18 @@ A clear and concise description of any alternative solutions or features you've 
 
 **Additional context**
 Add any other context or screenshots about the feature request here.
+
+**Implementation suggestions**
+If you have ideas about how this could be implemented, please share them here.
+
+**Priority**
+- [ ] Low
+- [ ] Medium  
+- [ ] High
+- [ ] Critical
+
+**Would you be willing to contribute to this feature?**
+- [ ] Yes, I can work on this
+- [ ] Yes, but I need guidance
+- [ ] No, but I can test it
+- [ ] No

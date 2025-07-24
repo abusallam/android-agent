@@ -1,0 +1,46 @@
+{
+  "common": {
+    "welcome": "مرحباً بعودتك",
+    "admin": "المدير",
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "success": "نجح"
+  },
+  "navigation": {
+    "dashboard": "لوحة التحكم",
+    "devices": "الأجهزة",
+    "locations": "المواقع",
+    "logs": "السجلات",
+    "settings": "الإعدادات"
+  },
+  "dashboard": {
+    "title": "وكيل الأندرويد",
+    "subtitle": "لوحة تحكم إدارة الأجهزة",
+    "onlineDevices": "الأجهزة المتصلة",
+    "offlineDevices": "الأجهزة غير المتصلة",
+    "gpsLocations": "مواقع GPS",
+    "activeSessions": "الجلسات النشطة",
+    "noDevicesOnline": "لا توجد أجهزة متصلة",
+    "noDevicesOffline": "لا توجد أجهزة مسجلة",
+    "devicesWillAppear": "ستظهر الأجهزة هنا عند اتصالها بالخادم.",
+    "previousDevices": "ستظهر الأجهزة المتصلة سابقاً هنا.",
+    "quickActions": "الإجراءات السريعة",
+    "apkBuilder": "منشئ APK",
+    "apkBuilderDesc": "إنشاء APK مخصص للعميل",
+    "locationMap": "خريطة المواقع",
+    "locationMapDesc": "عرض مواقع الأجهزة",
+    "systemLogs": "سجلات النظام",
+    "systemLogsDesc": "عرض سجلات التطبيق",
+    "modernDashboard": "لوحة التحكم الحديثة نشطة",
+    "modernDashboardDesc": "أنت تستخدم الآن لوحة تحكم Next.js المحدثة. النظام القديم لا يزال يعمل على المنفذ 22533."
+  },
+  "theme": {
+    "light": "فاتح",
+    "dark": "داكن",
+    "system": "النظام"
+  },
+  "language": {
+    "english": "English",
+    "arabic": "العربية"
+  }
+}

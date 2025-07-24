@@ -1,7 +1,8 @@
-<p align="center">
-<img src="ourlogo" height="60"><br>
-A cloud based remote android managment suite, powered by NodeJS
-</p>
+# Android Agent
+
+**A powerful, open-source, and self-hosted remote management suite for Android devices.**
+
+Android Agent allows you to remotely manage and monitor your Android devices through a modern, web-based interface. It is designed to be easy to deploy, use, and extend.
 
 
 
@@ -60,12 +61,14 @@ Please have a look through the current issues, open and closed to see if your is
 <a href="https://github.com/D3VL/L3MON/raw/master/Screenshots/installed_apps.png"> <img width="1604" src="https://github.com/D3VL/L3MON/raw/master/Screenshots/installed_apps.png"> Installed Apps</a> | <a href="https://github.com/D3VL/L3MON/raw/master/Screenshots/microphone.png"> <img width="1604" src="https://github.com/D3VL/L3MON/raw/master/Screenshots/microphone.png"> Microphone</a> |<a href="https://github.com/D3VL/L3MON/raw/master/Screenshots/notification_log.png"> <img width="1604" src="https://github.com/D3VL/L3MON/raw/master/Screenshots/notification_log.png"> Notifications</a>||
 <a href="https://github.com/D3VL/L3MON/raw/master/Screenshots/event_log.png"> <img width="1604" src="https://github.com/D3VL/L3MON/raw/master/Screenshots/event_log.png"> Event Log</a> | <a href="https://github.com/D3VL/L3MON/raw/master/Screenshots/login.png"> <img width="1604" src="https://github.com/D3VL/L3MON/raw/master/Screenshots/login.png"> Login</a> |<a href="https://github.com/D3VL/L3MON/raw/master/Screenshots/wifi_manager.png"> <img width="1604" src="https://github.com/D3VL/L3MON/raw/master/Screenshots/wifi_manager.png"> WiFi Manager</a>|
 
-## Thanks
-We utilized serveral opensource softwares, Without these, L3MON Wouldn't be what it is!
- - Inspiration for the project and the basic building blocks for the Android App are based off [AhMyth](https://github.com/AhMyth/AhMyth-Android-RAT) 
- - [express](https://github.com/expressjs/express)
- - [node-geoip](https://github.com/bluesmoon/node-geoip)
- - [lowdb](https://github.com/typicode/lowdb)
- - [socket.io](https://github.com/socketio/socket.io)
- - [Open Street Map](https://www.openstreetmap.org)
- - [Leaflet](https://leafletjs.com/)
+## Acknowledgements
+
+This project is a modernized and white-labeled version of the original L3MON project. We are grateful to the original developers for their work.
+
+We also utilize several open-source softwares, without which this project would not be possible:
+
+-   [Express](https://github.com/expressjs/express)
+-   [socket.io](https://github.com/socketio/socket.io)
+-   [lowdb](https://github.com/typicode/lowdb)
+-   [Open Street Map](https://www.openstreetmap.org)
+-   [Leaflet](https://leafletjs.com/)
