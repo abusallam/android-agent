@@ -88,30 +88,7 @@ services:
       timeout: 10s
       retries: 3
 
-  # Legacy Android Agent (Optional - for migration)
-  legacy-agent:
-    build:
-      context: ./server
-      dockerfile: ../Dockerfile
-    container_name: android-agent-legacy
-    restart: unless-stopped
-    environment:
-      - REDIS_HOST=redis
-      - SESSION_SECRET=legacy-secret-2024
-      - ADMIN_USERNAME=admin
-      - ADMIN_PASSWORD=secure_admin_2024
-      - BCRYPT_ROUNDS=12
-      - NODE_ENV=production
-    ports:
-      - "22533:22533"
-    volumes:
-      - ./server/clientData:/usr/src/app/clientData
-    depends_on:
-      - redis
-    networks:
-      - android-agent-network
-    profiles:
-      - legacy
+
 
 volumes:
   postgres_data:

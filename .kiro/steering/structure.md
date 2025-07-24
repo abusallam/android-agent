@@ -3,110 +3,127 @@
 ## Root Directory Layout
 ```
 android-agent/
-├── client/                 # Android client application
-├── server/                 # Node.js backend server
-├── Screenshots/            # Documentation screenshots
-├── docker-compose.yml      # Multi-service orchestration
-├── Dockerfile             # Server container definition
-└── README.md              # Project documentation
+├── modern-dashboard/       # Next.js PWA application
+├── .github/               # GitHub workflows and templates
+├── .kiro/                 # Kiro IDE configuration and specs
+├── docker-compose.yml     # Multi-service orchestration
+├── init-db.sql           # Database initialization
+├── deploy.sh             # Production deployment script
+└── README.md             # Project documentation
 ```
 
-## Server Structure (`server/`)
+## Modern Dashboard Structure (`modern-dashboard/`)
 ```
-server/
-├── index.js               # Main application entry point
-├── package.json           # Node.js dependencies and scripts
-├── app/factory/           # APK building and signing tools
-│   ├── apktool.jar        # APK decompilation/compilation tool
-│   ├── sign.jar           # APK signing utility
-│   ├── base.apk           # Template APK for building
-│   ├── decompiled/        # Decompiled APK source (smali)
-│   ├── testkey.pk8        # Test signing key
-│   └── testkey.x509.pem   # Test certificate
-├── assets/                # Web assets and templates
-│   ├── views/             # EJS templates
-│   │   ├── deviceManagerPages/  # Device-specific pages
-│   │   └── partials/      # Reusable template components
-│   └── webpublic/         # Static web assets
-│       ├── css/           # Stylesheets (Semantic UI + custom)
-│       ├── js/            # Client-side JavaScript
-│       ├── client_downloads/  # File download storage
-│       └── build.s.apk    # Generated APK download
-├── clientData/            # Persistent client data storage
-├── includes/              # Core server modules
-│   ├── const.js           # Configuration constants
-│   ├── databaseGateway.js # LowDB database interface
-│   ├── clientManager.js   # Device connection management
-│   ├── logManager.js      # Application logging
-│   ├── apkBuilder.js      # APK generation logic
-│   └── expressRoutes.js   # HTTP route definitions
-```
-
-## Android Client Structure (`client/`)
-```
-client/
-├── build.gradle           # Project-level build configuration
-├── settings.gradle        # Gradle settings
-├── gradle.properties      # Build properties
-├── gradlew               # Gradle wrapper script
-├── app/                  # Main application module
-│   ├── build.gradle      # App-level build configuration
-│   ├── proguard-rules.pro # Code obfuscation rules
-│   └── src/main/
-│       ├── AndroidManifest.xml  # App permissions and components
-│       ├── java/com/etechd/l3mon/  # Java source code
-│       │   ├── MainActivity.java      # App entry point
-│       │   ├── MainService.java       # Background service
-│       │   ├── IOSocket.java          # Socket.IO communication
-│       │   ├── ConnectionManager.java # Network management
-│       │   ├── LocManager.java        # GPS/location services
-│       │   ├── CallsManager.java      # Call log access
-│       │   ├── SMSManager.java        # SMS operations
-│       │   ├── ContactsManager.java   # Contacts access
-│       │   ├── FileManager.java       # File system operations
-│       │   ├── MicManager.java        # Microphone recording
-│       │   ├── CameraManager.java     # Camera operations
-│       │   ├── WifiScanner.java       # WiFi network scanning
-│       │   ├── AppList.java           # Installed apps enumeration
-│       │   ├── PermissionManager.java # Permission handling
-│       │   ├── NotificationListener.java # Notification monitoring
-│       │   ├── MyReceiver.java        # Broadcast receiver
-│       │   └── ServiceReciever.java   # Service management
-│       └── res/          # Android resources
-│           ├── layout/   # UI layouts
-│           ├── values/   # Strings, colors, dimensions
-│           └── mipmap-*/ # App icons (various densities)
+modern-dashboard/
+├── src/
+│   ├── app/                    # Next.js App Router
+│   │   ├── [locale]/          # Internationalized routes
+│   │   │   ├── layout.tsx     # Locale-specific layout
+│   │   │   └── page.tsx       # Main dashboard page
+│   │   ├── api/               # API routes
+│   │   │   ├── auth/login/    # Authentication endpoints
+│   │   │   ├── device/sync/   # Device management API
+│   │   │   ├── location/sync/ # GPS tracking API
+│   │   │   └── health/        # Health check endpoint
+│   │   ├── globals.css        # Global styles
+│   │   └── layout.tsx         # Root layout
+│   ├── components/            # Reusable React components
+│   │   ├── theme-provider.tsx # Theme management
+│   │   ├── theme-toggle.tsx   # Dark/light mode toggle
+│   │   ├── language-switcher.tsx # Language selection
+│   │   └── pwa-installer.tsx  # PWA installation component
+│   ├── hooks/                 # Custom React hooks
+│   │   └── usePWA.ts         # PWA functionality hook
+│   ├── lib/                   # Utility libraries
+│   │   ├── auth.ts           # Authentication utilities
+│   │   └── db-init.ts        # Database initialization
+│   ├── i18n/                 # Internationalization
+│   │   └── request.ts        # i18n configuration
+│   └── middleware.ts         # Next.js middleware
+├── public/                   # Static assets
+│   ├── manifest.json        # PWA manifest
+│   ├── sw.js               # Service worker
+│   └── logo.png            # Application logo
+├── prisma/                  # Database schema and migrations
+│   └── schema.prisma       # Prisma database schema
+├── messages/               # Translation files
+│   ├── en.json            # English translations
+│   └── ar.json            # Arabic translations
+├── Dockerfile             # Container definition
+├── package.json           # Dependencies and scripts
+└── next.config.ts         # Next.js configuration
 ```
 
 ## Key Architectural Patterns
 
-### Server-Side Organization
-- **Global Modules**: Core services exposed as global variables (CONST, db, logManager, clientManager, apkBuilder)
-- **Route-Based Structure**: Express routes organized in separate module (`expressRoutes.js`)
-- **Manager Pattern**: Separate managers for clients, logs, and APK building
-- **Configuration Centralization**: All constants and settings in `const.js`
+### Modern PWA Architecture
+- **App Router**: Next.js 15 App Router for modern routing
+- **Server Components**: React Server Components for performance
+- **API Routes**: Serverless API endpoints
+- **Middleware**: Request/response processing
+- **Service Workers**: Background processing and offline support
 
-### Client-Side Organization
-- **Service-Oriented**: Each feature implemented as separate manager class
-- **Socket Communication**: Centralized in `IOSocket.java` with message key system
-- **Background Processing**: Main functionality runs in `MainService.java`
-- **Permission-Based**: Features gated by Android permission system
+### Database & API Design
+- **Prisma ORM**: Type-safe database access
+- **PostgreSQL**: Scalable relational database
+- **Redis Cache**: Session storage and performance optimization
+- **RESTful APIs**: Clean, predictable API design
+- **Real-time Updates**: WebSocket connections for live data
 
-### Data Flow Patterns
-- **Real-time Communication**: Socket.IO events between Android client and web dashboard
-- **Command Queue System**: Asynchronous command execution with callbacks
-- **File-Based Persistence**: LowDB for configuration, file system for client data
-- **Template Rendering**: Server-side EJS templates with client-side jQuery
+### Security Architecture
+- **JWT Authentication**: Stateless, secure token-based auth
+- **bcrypt Hashing**: Industry-standard password protection
+- **Secure Cookies**: HttpOnly, Secure, SameSite protection
+- **Input Validation**: Comprehensive request sanitization
+- **CORS Configuration**: Proper cross-origin security
 
-### Security Considerations
-- **Authentication Flow**: Cookie-based sessions with token validation
-- **APK Signing**: Test certificates (not production-ready)
-- **TLS Support**: Optional HTTPS configuration
-- **Permission Management**: Android runtime permissions for sensitive operations
+### PWA Features
+- **Installable**: Add to home screen functionality
+- **Offline Support**: Service worker caching strategies
+- **Background Sync**: Continuous data synchronization
+- **Push Notifications**: Real-time alerts and updates
+- **Responsive Design**: Mobile-first, touch-optimized interface
+
+### Internationalization
+- **Multi-language**: English and Arabic support
+- **RTL Support**: Right-to-left layout for Arabic
+- **Dynamic Switching**: Runtime language switching
+- **Locale Routing**: URL-based locale detection
+
+### Development Patterns
+- **TypeScript**: Full type safety across the application
+- **Component-Based**: Reusable React components
+- **Hook-Based**: Custom hooks for shared logic
+- **Environment-Based**: Configuration through environment variables
 
 ## File Naming Conventions
-- **Server Files**: camelCase JavaScript modules
-- **Android Files**: PascalCase Java classes
-- **Templates**: lowercase with underscores (device_manager.ejs)
-- **Static Assets**: lowercase with hyphens (custom.css)
-- **Configuration**: UPPERCASE constants, lowercase environment variables
+- **Components**: PascalCase React components (ThemeToggle.tsx)
+- **Hooks**: camelCase with 'use' prefix (usePWA.ts)
+- **API Routes**: RESTful naming (route.ts in folders)
+- **Utilities**: camelCase JavaScript modules (auth.ts)
+- **Styles**: kebab-case CSS files (globals.css)
+- **Configuration**: lowercase with extensions (next.config.ts)
+
+## Data Flow Architecture
+```
+PWA Client → API Routes → Prisma ORM → PostgreSQL
+     ↓           ↓            ↓
+Service Worker → Redis Cache → Background Jobs
+     ↓
+IndexedDB (Offline Storage)
+```
+
+## Security Considerations
+- **Authentication Flow**: JWT-based stateless authentication
+- **Session Management**: Redis-backed secure sessions
+- **Data Validation**: Input sanitization at API boundaries
+- **HTTPS Enforcement**: TLS encryption for all communications
+- **Permission Management**: Role-based access control
+
+## Performance Optimizations
+- **Server-Side Rendering**: Next.js SSR for fast initial loads
+- **Static Generation**: Pre-built pages where possible
+- **Image Optimization**: Next.js automatic image optimization
+- **Code Splitting**: Automatic bundle splitting
+- **Caching Strategy**: Multi-layer caching (Redis, CDN, Browser)
+- **Database Indexing**: Optimized database queries with proper indexes
