@@ -11,7 +11,6 @@ export const metadata: Metadata = {
   title: "Android Agent - Device Management Dashboard",
   description: "Modern Android device management and monitoring platform",
   manifest: "/manifest.json",
-  themeColor: "#2563eb",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -34,13 +33,20 @@ export const metadata: Metadata = {
   },
 };
 
+export function generateViewport() {
+  return {
+    themeColor: "#2563eb",
+  };
+}
+
 export default async function LocaleLayout({
   children,
-  params: { locale }
+  params
 }: {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
   // Providing all messages to the client
   // side is the easiest way to get started
   const messages = await getMessages();

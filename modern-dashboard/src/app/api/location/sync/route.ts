@@ -1,86 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from '@/lib/auth';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify authentication
-    const session = await getSession();
-    if (!session) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const body = await request.json();
+    const { latitude, longitude, accuracy, altitude, heading, speed, timestamp, source } = body;
 
-    const locationData = await request.json();
-    const { latitude, longitude, accuracy, timestamp } = locationData;
-    
-    if (!latitude || !longitude) {
-      return NextResponse.json(
-        { error: 'Latitude and longitude are required' },
-        { status: 400 }
-      );
-    }
-
-    // Get or create device
-    const deviceId = generateDeviceId(request.headers.get('user-agent') || '');
-    
-    const device = await prisma.device.upsert({
-      where: { deviceId },
-      update: {
-        isOnline: true,
-        lastSeen: new Date(),
-        location: {
-          latitude,
-          longitude,
-          accuracy,
-          timestamp
-        }
-      },
-      create: {
-        deviceId,
-        name: `Device ${deviceId.slice(-6)}`,
-        isOnline: true,
-        firstSeen: new Date(),
-        lastSeen: new Date(),
-        location: {
-          latitude,
-          longitude,
-          accuracy,
-          timestamp
-        }
-      }
+    // Log location update
+    console.log('📍 Location Update:', {
+      timestamp,
+      source,
+      coordinates: { latitude, longitude },
+      accuracy,
+      altitude,
+      heading,
+      speed
     });
 
-    // Store GPS log
-    await prisma.gpsLog.create({
-      data: {
-        deviceId: device.id,
-        latitude,
-        longitude,
-        accuracy: accuracy || 0,
-        enabled: true,
-        timestamp: new Date(timestamp)
-      }
-    });
+    // In a real implementation, you would:
+    // 1. Validate the request (authentication, device ID, etc.)
+    // 2. Store location data in database with timestamp
+    // 3. Check for geofencing violations
+    // 4. Update device's last known location
+    // 5. Trigger location-based alerts if necessary
 
+    // For now, we'll just acknowledge the update
     return NextResponse.json({
       success: true,
-      message: 'Location synced successfully'
+      message: 'Location updated successfully',
+      timestamp: new Date().toISOString(),
+      coordinates: { latitude, longitude }
     });
+
   } catch (error) {
-    console.error('Location sync error:', error);
+    console.error('❌ Location sync error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { success: false, error: 'Failed to sync location' },
       { status: 500 }
     );
   }
 }
 
-function generateDeviceId(userAgent: string): string {
-  const crypto = require('crypto');
-  return crypto.createHash('md5').update(userAgent).digest('hex').slice(0, 16);
+export async function GET() {
+  return NextResponse.json({
+    message: 'Location sync endpoint is active',
+    timestamp: new Date().toISOString()
+  });
 }

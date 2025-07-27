@@ -1,12 +1,16 @@
 {
   "name": "Android Agent - Device Management",
   "short_name": "Android Agent",
-  "description": "Secure Android device management and monitoring platform",
+  "description": "Secure Android device management and monitoring platform with auto-start and background monitoring",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2563eb",
   "orientation": "portrait-primary",
+  "scope": "/",
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
   "icons": [
     {
       "src": "/logo.png",
@@ -21,7 +25,7 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["productivity", "utilities", "business"],
+  "categories": ["productivity", "utilities", "business", "medical"],
   "screenshots": [
     {
       "src": "/logo.png",
@@ -36,12 +40,43 @@
     "camera",
     "microphone",
     "background-sync",
-    "persistent-storage"
+    "persistent-storage",
+    "wake-lock"
   ],
   "features": [
     "Cross-platform",
     "Background sync",
     "Offline support",
-    "Push notifications"
+    "Push notifications",
+    "Auto-start on boot",
+    "Continuous monitoring"
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Open main dashboard",
+      "url": "/",
+      "icons": [
+        {
+          "src": "/logo.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Emergency",
+      "short_name": "Emergency",
+      "description": "Emergency alert",
+      "url": "/?emergency=true",
+      "icons": [
+        {
+          "src": "/logo.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
   ]
 }

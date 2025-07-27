@@ -2,6 +2,17 @@
 
 import { useEffect, useState } from 'react';
 
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
+interface ServiceWorkerRegistrationWithSync extends ServiceWorkerRegistration {
+  sync: {
+    register(tag: string): Promise<void>;
+  };
+}
+
 export interface PWACapabilities {
   isInstallable: boolean;
   isInstalled: boolean;
@@ -23,12 +34,12 @@ export function usePWA() {
     supportsBackgroundSync: false,
   });
 
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
     // Check if app is installed
     const isInstalled = window.matchMedia('(display-mode: standalone)').matches ||
-                       (window.navigator as any).standalone === true;
+                       (window.navigator as unknown as { standalone?: boolean }).standalone === true;
 
     // Check online status
     const updateOnlineStatus = () => {
@@ -49,7 +60,7 @@ export function usePWA() {
         try {
           const result = await navigator.permissions.query({ name: 'geolocation' });
           return result.state === 'granted';
-        } catch (error) {
+        } catch {
           return false;
         }
       }
@@ -74,7 +85,7 @@ export function usePWA() {
     // Listen for install prompt
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e);
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
       setCapabilities(prev => ({ ...prev, isInstallable: true }));
     };
 
@@ -137,7 +148,7 @@ export function usePWA() {
   const startBackgroundSync = async () => {
     if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
       try {
-        const registration = await navigator.serviceWorker.ready;
+        const registration = await navigator.serviceWorker.ready as ServiceWorkerRegistrationWithSync;
         await registration.sync.register('device-sync');
         await registration.sync.register('location-sync');
         return true;

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Android Agent - Offline</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        p {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        
+        .status {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+        
+        .status-indicator.offline {
+            background: #ef4444;
+        }
+        
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .monitoring-status {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">📱</div>
+        <h1>Android Agent</h1>
+        <p>You're currently offline, but background monitoring is still active.</p>
+        
+        <div class="monitoring-status">
+            <div class="status-item">
+                <span>🛡️ Background Monitoring</span>
+                <div class="status-indicator pulse" id="monitoringStatus"></div>
+            </div>
+            <div class="status-item">
+                <span>📍 Location Tracking</span>
+                <div class="status-indicator" id="locationStatus"></div>
+            </div>
+            <div class="status-item">
+                <span>🔄 Auto-Sync</span>
+                <div class="status-indicator" id="syncStatus"></div>
+            </div>
+        </div>
+        
+        <div class="status">
+            <h3>📊 Offline Status</h3>
+            <div class="status-item">
+                <span>Network Connection</span>
+                <span id="networkStatus">Offline</span>
+            </div>
+            <div class="status-item">
+                <span>Last Sync</span>
+                <span id="lastSync">Checking...</span>
+            </div>
+            <div class="status-item">
+                <span>Cached Data</span>
+                <span id="cacheStatus">Available</span>
+            </div>
+        </div>
+        
+        <button class="btn" onclick="checkConnection()">
+            🔄 Check Connection
+        </button>
+        
+        <button class="btn" onclick="goToDashboard()">
+            📊 Open Dashboard
+        </button>
+        
+        <p style="font-size: 0.9rem; margin-top: 30px; opacity: 0.7;">
+            The app will automatically sync when connection is restored.
+        </p>
+    </div>
+
+    <script>
+        // Check connection status
+        function updateConnectionStatus() {
+            const networkStatus = document.getElementById('networkStatus');
+            const monitoringStatus = document.getElementById('monitoringStatus');
+            const locationStatus = document.getElementById('locationStatus');
+            const syncStatus = document.getElementById('syncStatus');
+            
+            if (navigator.onLine) {
+                networkStatus.textContent = 'Online';
+                networkStatus.style.color = '#10b981';
+                monitoringStatus.classList.remove('offline');
+                locationStatus.classList.remove('offline');
+                syncStatus.classList.remove('offline');
+            } else {
+                networkStatus.textContent = 'Offline';
+                networkStatus.style.color = '#ef4444';
+                // Keep monitoring active even offline
+            }
+        }
+        
+        // Check last sync time
+        function updateLastSync() {
+            const lastSyncElement = document.getElementById('lastSync');
+            try {
+                const lastSync = localStorage.getItem('last-sync');
+                if (lastSync) {
+                    const syncTime = new Date(lastSync);
+                    const now = new Date();
+                    const diffMinutes = Math.floor((now - syncTime) / (1000 * 60));
+                    
+                    if (diffMinutes < 1) {
+                        lastSyncElement.textContent = 'Just now';
+                    } else if (diffMinutes < 60) {
+                        lastSyncElement.textContent = `${diffMinutes} min ago`;
+                    } else {
+                        const diffHours = Math.floor(diffMinutes / 60);
+                        lastSyncElement.textContent = `${diffHours}h ago`;
+                    }
+                } else {
+                    lastSyncElement.textContent = 'Never';
+                }
+            } catch (error) {
+                lastSyncElement.textContent = 'Unknown';
+            }
+        }
+        
+        // Check connection manually
+        function checkConnection() {
+            updateConnectionStatus();
+            
+            if (navigator.onLine) {
+                // Try to reload the main app
+                window.location.href = '/';
+            } else {
+                alert('Still offline. The app will automatically reconnect when internet is available.');
+            }
+        }
+        
+        // Go to dashboard (cached version)
+        function goToDashboard() {
+            window.location.href = '/';
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateConnectionStatus();
+            updateLastSync();
+            
+            // Update status every 30 seconds
+            setInterval(() => {
+                updateConnectionStatus();
+                updateLastSync();
+            }, 30000);
+            
+            // Listen for online/offline events
+            window.addEventListener('online', () => {
+                updateConnectionStatus();
+                // Automatically redirect when back online
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            });
+            
+            window.addEventListener('offline', updateConnectionStatus);
+        });
+        
+        // Check if service worker is active
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.ready.then((registration) => {
+                console.log('✅ Service worker is active');
+                document.getElementById('monitoringStatus').classList.remove('offline');
+                document.getElementById('locationStatus').classList.remove('offline');
+                document.getElementById('syncStatus').classList.remove('offline');
+            });
+        }
+    </script>
+</body>
+</html>

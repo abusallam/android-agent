@@ -10,14 +10,16 @@ const locales = ['en', 'ar'];
 
 export default getRequestConfig(async ({locale}) => {
   // Validate that the incoming `locale` parameter is valid
-  if (!locales.includes(locale as any)) notFound();
+  if (!locales.includes(locale as string)) notFound();
 
+  const validLocale = locale as 'en' | 'ar';
   const messages = {
     en: enMessages,
     ar: arMessages
-  }[locale as keyof typeof messages];
+  }[validLocale];
 
   return {
+    locale: validLocale,
     messages
   };
 });

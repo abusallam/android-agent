@@ -14,7 +14,7 @@ export async function GET() {
       try {
         // Redis health check would go here
         redisStatus = 'connected';
-      } catch (error) {
+      } catch {
         redisStatus = 'error';
       }
     }

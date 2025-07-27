@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2024 Android Agent Community
+Copyright (c) 2025 Family Safety Monitor Contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +19,33 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+## Additional Terms for Family Safety Use
+
+This software is specifically designed for family safety monitoring of disabled 
+family members. By using this software, you acknowledge that:
+
+1. **Consent Required**: You must have explicit consent from the person being 
+   monitored, or legal authority to monitor them (such as a parent monitoring 
+   a minor child or a legal guardian monitoring a disabled family member).
+
+2. **Lawful Use Only**: This software must be used in compliance with all 
+   applicable local, state, and federal laws regarding privacy, surveillance, 
+   and disability rights.
+
+3. **Safety Purpose**: This software is intended for safety and care purposes 
+   only, not for surveillance or control that would violate the dignity and 
+   rights of disabled individuals.
+
+4. **Data Protection**: Users are responsible for protecting the privacy and 
+   security of all data collected through this software.
+
+5. **No Warranty for Safety**: While this software is designed to help with 
+   safety monitoring, it should not be relied upon as the sole means of 
+   ensuring someone's safety. Always have backup safety measures in place.
+
+The contributors to this project are committed to creating technology that 
+empowers families while respecting the rights and dignity of all individuals, 
+especially those with disabilities.

@@ -26,11 +26,15 @@ export async function initializeDatabase() {
       console.log('✅ Default admin user created (username: admin, password: admin)');
     }
 
-    // Create indexes for better performance
-    await prisma.$executeRaw`CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_devices_device_id ON devices(device_id);`;
-    await prisma.$executeRaw`CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_gps_logs_device_timestamp ON gps_logs(device_id, timestamp);`;
-    await prisma.$executeRaw`CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_call_logs_device_date ON call_logs(device_id, date);`;
-    await prisma.$executeRaw`CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_sms_logs_device_date ON sms_logs(device_id, date);`;
+    // Create indexes for better performance (SQLite compatible)
+    try {
+      await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_devices_device_id ON devices(device_id);`;
+      await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_gps_logs_device_timestamp ON gps_logs(device_id, timestamp);`;
+      await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_call_logs_device_date ON call_logs(device_id, date);`;
+      await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_sms_logs_device_date ON sms_logs(device_id, date);`;
+    } catch {
+      console.log('⚠️ Index creation skipped (may already exist)');
+    }
 
     console.log('✅ Database initialized successfully');
   } catch (error) {

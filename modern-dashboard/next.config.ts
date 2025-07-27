@@ -2,16 +2,17 @@ import createNextIntlPlugin from 'next-intl/plugin';
 import withPWA from 'next-pwa';
 import type { NextConfig } from "next";
 
-const withNextIntl = createNextIntlPlugin();
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const nextConfig: NextConfig = {
   output: 'standalone',
-  experimental: {
-    serverComponentsExternalPackages: ['@prisma/client'],
-  },
+  serverExternalPackages: ['@prisma/client'],
   images: {
     domains: ['localhost'],
   },
+  // Allow cross-origin requests from local network for development
+  allowedDevOrigins: ['172.30.75.206'],
+
   async headers() {
     return [
       {
@@ -48,7 +49,7 @@ const withPWAConfig = withPWA({
       urlPattern: /^https?.*/,
       handler: 'NetworkFirst',
       options: {
-        cacheName: 'offlineCache',
+        cacheName: 'android-agent-cache',
         expiration: {
           maxEntries: 200,
         },

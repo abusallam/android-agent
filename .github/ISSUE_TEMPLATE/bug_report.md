@@ -1,8 +1,8 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Create a report to help us improve Family Safety Monitor
 title: '[BUG] '
-labels: 'bug'
+labels: bug
 assignees: ''
 
 ---
@@ -24,23 +24,19 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Environment (please complete the following information):**
- - OS: [e.g. Ubuntu 20.04, Windows 10, macOS 12]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
- - Docker version (if using Docker)
- - Node.js version (if running locally)
+ - Device: [e.g. iPhone 12, Samsung Galaxy S21, Desktop]
+ - OS: [e.g. iOS 15, Android 12, Windows 11]
+ - Browser: [e.g. chrome, safari, firefox]
+ - Version: [e.g. 22]
+ - PWA Installed: [yes/no]
 
-**Device Information (if mobile-related):**
- - Device: [e.g. iPhone6, Samsung Galaxy S21]
- - OS: [e.g. iOS8.1, Android 12]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+**Family Safety Context**
+- Is this affecting emergency features? [yes/no]
+- Is this impacting monitoring capabilities? [yes/no]
+- Severity for family safety: [low/medium/high/critical]
 
 **Additional context**
 Add any other context about the problem here.
 
 **Logs**
-If applicable, add relevant logs:
-```
-Paste logs here
-```
+If applicable, please include any error logs or console output.

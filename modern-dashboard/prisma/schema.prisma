@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -218,7 +218,7 @@ model FileRecord {
   deviceId String
   path     String
   name     String
-  size     BigInt?
+  size     Int?
   isDir    Boolean @default(false)
   
   device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
@@ -233,7 +233,7 @@ model Download {
   deviceId     String
   originalName String
   filePath     String
-  fileSize     BigInt?
+  fileSize     Int?
   type         DownloadType
   
   device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
