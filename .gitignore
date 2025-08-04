@@ -117,5 +117,26 @@ ssl/*.key
 ssl/*.crt
 ssl/*.pem
 
+# UV package manager
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Development scripts output
+*.log
+dev-server.log
+prod-server.log
+ngrok.log
+
 # Keep example files
 !ssl/README.md
+!.env.example

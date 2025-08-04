@@ -1,14 +1,11 @@
-import createMiddleware from 'next-intl/middleware';
+import { NextResponse } from 'next/server';
 
-export default createMiddleware({
-  // A list of all locales that are supported
-  locales: ['en', 'ar'],
-
-  // Used when no locale matches
-  defaultLocale: 'en'
-});
+export function middleware() {
+  // For now, just pass through all requests
+  // TODO: Add authentication middleware here
+  return NextResponse.next();
+}
 
 export const config = {
-  // Match only internationalized pathnames
-  matcher: ['/', '/((?!api|_next|_vercel|.*\\..*).*)']
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 };

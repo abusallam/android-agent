@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { checkDatabaseHealth, getDatabaseConfig } from '@/lib/db-config';
 
 export async function GET() {
   try {
-    // Check database connection
-    await prisma.$queryRaw`SELECT 1`;
+    // Check database health
+    const dbHealth = await checkDatabaseHealth();
+    const dbConfig = getDatabaseConfig();
     
     // Check Redis connection (if configured)
     let redisStatus = 'not configured';
@@ -20,12 +19,18 @@ export async function GET() {
     }
 
     const healthData = {
-      status: 'healthy',
+      status: dbHealth.status,
       timestamp: new Date().toISOString(),
       version: process.env.npm_package_version || '1.0.0',
       environment: process.env.NODE_ENV || 'development',
+      database: {
+        provider: dbConfig.provider,
+        url: dbConfig.url.replace(/\/\/.*@/, '//***:***@'), // Hide credentials
+        status: dbHealth.status,
+        error: dbHealth.error
+      },
       services: {
-        database: 'connected',
+        database: dbHealth.status === 'healthy' ? 'connected' : 'error',
         redis: redisStatus,
       },
       uptime: process.uptime(),
@@ -35,7 +40,9 @@ export async function GET() {
       },
     };
 
-    return NextResponse.json(healthData, { status: 200 });
+    return NextResponse.json(healthData, { 
+      status: dbHealth.status === 'healthy' ? 200 : 503 
+    });
   } catch (error) {
     console.error('Health check failed:', error);
     
@@ -43,11 +50,9 @@ export async function GET() {
       {
         status: 'unhealthy',
         timestamp: new Date().toISOString(),
-        error: 'Database connection failed',
+        error: 'Health check failed: ' + (error instanceof Error ? error.message : 'Unknown error'),
       },
       { status: 503 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

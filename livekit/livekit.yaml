@@ -1,0 +1,119 @@
+# 🛡️ Android Agent AI - LiveKit Server Configuration
+# WebRTC media server configuration
+
+# Server settings
+port: 7880
+bind_addresses:
+  - ""
+
+# API settings
+rtc:
+  tcp_port: 7881
+  port_range_start: 50000
+  port_range_end: 60000
+  use_external_ip: true
+  # external_ip: "YOUR_PUBLIC_IP"  # Will be auto-detected
+
+# TURN server configuration (using our COTURN server)
+turn:
+  enabled: true
+  domain: android-agent.local
+  tls_port: 5349
+  udp_port: 3478
+  username: androidagent
+  password: coturn_password_2024
+
+# Redis configuration for scaling
+redis:
+  address: redis:6379
+  password: redis_password_2024
+  db: 0
+
+# Room settings
+room:
+  max_participants: 20
+  empty_timeout: 300s
+  departure_timeout: 20s
+  auto_create: true
+
+# Audio settings
+audio:
+  # Audio codecs in order of preference
+  codecs:
+    - mime: audio/opus
+      fmtp_line: "minptime=10;useinbandfec=1"
+    - mime: audio/red
+    - mime: audio/PCMU
+    - mime: audio/PCMA
+
+# Video settings
+video:
+  # Video codecs in order of preference
+  codecs:
+    - mime: video/H264
+      fmtp_line: "level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42001f"
+    - mime: video/H264
+      fmtp_line: "level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42e01f"
+    - mime: video/VP8
+    - mime: video/VP9
+
+# API keys for Android Agent
+keys:
+  android-agent-api-key-2024: android-agent-api-secret-2024-very-secure
+
+# Logging
+log_level: info
+log_config:
+  json: false
+  level: info
+  sample: false
+
+# Development settings
+development: false
+
+# Webhook settings (optional)
+# webhook:
+#   urls:
+#     - http://android-agent:3000/api/livekit/webhook
+#   api_key: android-agent-webhook-key-2024
+
+# Recording settings (optional)
+# recording:
+#   enabled: true
+#   storage:
+#     type: file
+#     file:
+#       path: /data/recordings
+
+# Ingress settings (optional)
+# ingress:
+#   rtmp_base_url: "rtmp://localhost:1935/live"
+
+# Egress settings (optional)
+# egress:
+#   insecure: true
+#   base_url: http://localhost:9090
+
+# Node settings for clustering (optional)
+# node:
+#   ip: ""
+#   region: "local"
+#   availability_zone: "local-az"
+
+# Metrics (optional)
+# prometheus_port: 6789
+
+# Health check
+health_check:
+  enabled: true
+  port: 7880
+
+# Signal relay (optional)
+# signal_relay:
+#   enabled: false
+
+# Limits
+limits:
+  bytes_per_sec: 20_000_000  # 20MB/s per participant
+  subscription_limit_video: 6
+  subscription_limit_audio: 60

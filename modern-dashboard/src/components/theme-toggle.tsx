@@ -1,12 +1,12 @@
 'use client';
 
-import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
+import { Moon, Sun } from 'lucide-react';
 
-export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+export default function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     setMounted(true);
@@ -14,8 +14,8 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <button className="p-2 rounded-md border border-gray-200 dark:border-gray-700">
-        <div className="h-4 w-4" />
+      <button className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700">
+        <div className="w-4 h-4" />
       </button>
     );
   }
@@ -23,13 +23,13 @@ export function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="p-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+      className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
       aria-label="Toggle theme"
     >
       {theme === 'dark' ? (
-        <Sun className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+        <Sun className="w-4 h-4 text-yellow-500" />
       ) : (
-        <Moon className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+        <Moon className="w-4 h-4 text-gray-700" />
       )}
     </button>
   );

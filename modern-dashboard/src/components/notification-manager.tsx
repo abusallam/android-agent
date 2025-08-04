@@ -1,244 +1,220 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Bell, BellOff, CheckCircle, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Bell, BellOff, Settings, Check, X } from 'lucide-react';
 
-interface NotificationState {
-  permission: NotificationPermission;
-  subscription: PushSubscription | null;
-  isSupported: boolean;
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'warning' | 'error' | 'success';
+  timestamp: string;
+  read: boolean;
 }
 
 export default function NotificationManager() {
-  const [notificationState, setNotificationState] = useState<NotificationState>({
-    permission: 'default',
-    subscription: null,
-    isSupported: false
-  });
+  const [notifications, setNotifications] = useState<Notification[]>([
+    {
+      id: '1',
+      title: 'Device Connected',
+      message: "Child's Phone has connected successfully",
+      type: 'success',
+      timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+      read: false
+    },
+    {
+      id: '2',
+      title: 'Location Update',
+      message: 'Device location updated: Alexandria, Egypt',
+      type: 'info',
+      timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+      read: true
+    }
+  ]);
 
-  const [showStatus, setShowStatus] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
-    // Check if notifications are supported
-    const isSupported = 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
-    
-    setNotificationState(prev => ({
-      ...prev,
-      isSupported,
-      permission: isSupported ? Notification.permission : 'denied'
-    }));
-
-    if (isSupported) {
-      checkExistingSubscription();
+    // Check if notifications are supported and enabled
+    if ('Notification' in window) {
+      setNotificationsEnabled(Notification.permission === 'granted');
     }
   }, []);
 
-  const checkExistingSubscription = async () => {
-    try {
-      const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.getSubscription();
-      
-      setNotificationState(prev => ({
-        ...prev,
-        subscription
-      }));
-    } catch (error) {
-      console.error('Error checking subscription:', error);
-    }
-  };
-
   const requestNotificationPermission = async () => {
-    if (!notificationState.isSupported) {
-      alert('Push notifications are not supported in this browser');
-      return;
-    }
-
-    try {
+    if ('Notification' in window) {
       const permission = await Notification.requestPermission();
-      setNotificationState(prev => ({ ...prev, permission }));
-
+      setNotificationsEnabled(permission === 'granted');
+      
       if (permission === 'granted') {
-        await subscribeToPush();
-        setShowStatus(true);
-        setTimeout(() => setShowStatus(false), 3000);
+        // Test notification
+        new Notification('Android Agent', {
+          body: 'Notifications enabled successfully!',
+          icon: '/logo.png'
+        });
       }
-    } catch (error) {
-      console.error('Error requesting notification permission:', error);
     }
   };
 
-  const subscribeToPush = async () => {
-    try {
-      const registration = await navigator.serviceWorker.ready;
-      
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(
-          process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || 
-          'BEl62iUYgUivxIkv69yViEuiBIa40HcCWLEaQC7-jCuLKR4dGfEoRqn6hsL7doVBEU6a7ckjBjdVvswGqMhQNdQ'
-        )
-      });
+  const markAsRead = (id: string) => {
+    setNotifications(prev => 
+      prev.map(notif => 
+        notif.id === id ? { ...notif, read: true } : notif
+      )
+    );
+  };
 
-      // Send subscription to server
-      await fetch('/api/push/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'subscribe',
-          endpoint: subscription.endpoint,
-          keys: {
-            p256dh: arrayBufferToBase64(subscription.getKey('p256dh')),
-            auth: arrayBufferToBase64(subscription.getKey('auth'))
-          }
-        })
-      });
+  const markAllAsRead = () => {
+    setNotifications(prev => 
+      prev.map(notif => ({ ...notif, read: true }))
+    );
+  };
 
-      setNotificationState(prev => ({ ...prev, subscription }));
-      
-      // Send test notification
-      await sendTestNotification();
-      
-    } catch (error) {
-      console.error('Error subscribing to push:', error);
+  const removeNotification = (id: string) => {
+    setNotifications(prev => prev.filter(notif => notif.id !== id));
+  };
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'success': return '✅';
+      case 'warning': return '⚠️';
+      case 'error': return '❌';
+      default: return 'ℹ️';
     }
   };
 
-  const sendTestNotification = async () => {
-    try {
-      await fetch('/api/push/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'send-notification',
-          title: '🛡️ Family Safety Monitor',
-          message: 'Emergency notifications are now enabled!',
-          type: 'test'
-        })
-      });
-    } catch (error) {
-      console.error('Error sending test notification:', error);
+  const getNotificationColor = (type: string) => {
+    switch (type) {
+      case 'success': return 'border-l-green-500 bg-green-50 dark:bg-green-900/20';
+      case 'warning': return 'border-l-yellow-500 bg-yellow-50 dark:bg-yellow-900/20';
+      case 'error': return 'border-l-red-500 bg-red-50 dark:bg-red-900/20';
+      default: return 'border-l-blue-500 bg-blue-50 dark:bg-blue-900/20';
     }
-  };
-
-  const unsubscribeFromPush = async () => {
-    try {
-      if (notificationState.subscription) {
-        await notificationState.subscription.unsubscribe();
-        setNotificationState(prev => ({ ...prev, subscription: null }));
-      }
-    } catch (error) {
-      console.error('Error unsubscribing from push:', error);
-    }
-  };
-
-  // Helper functions
-  const urlBase64ToUint8Array = (base64String: string) => {
-    const padding = '='.repeat((4 - base64String.length % 4) % 4);
-    const base64 = (base64String + padding)
-      .replace(/-/g, '+')
-      .replace(/_/g, '/');
-
-    const rawData = window.atob(base64);
-    const outputArray = new Uint8Array(rawData.length);
-
-    for (let i = 0; i < rawData.length; ++i) {
-      outputArray[i] = rawData.charCodeAt(i);
-    }
-    return outputArray;
-  };
-
-  const arrayBufferToBase64 = (buffer: ArrayBuffer | null) => {
-    if (!buffer) return '';
-    const bytes = new Uint8Array(buffer);
-    let binary = '';
-    for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return window.btoa(binary);
-  };
-
-  const getStatusColor = () => {
-    if (!notificationState.isSupported) return 'text-gray-500';
-    if (notificationState.permission === 'granted' && notificationState.subscription) return 'text-green-600';
-    if (notificationState.permission === 'denied') return 'text-red-600';
-    return 'text-yellow-600';
-  };
-
-  const getStatusText = () => {
-    if (!notificationState.isSupported) return 'Not supported';
-    if (notificationState.permission === 'granted' && notificationState.subscription) return 'Active';
-    if (notificationState.permission === 'denied') return 'Blocked';
-    return 'Disabled';
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          {notificationState.permission === 'granted' && notificationState.subscription ? (
-            <Bell className="h-5 w-5 text-green-600" />
-          ) : (
-            <BellOff className="h-5 w-5 text-gray-400" />
+    <div className="relative">
+      {/* Notification Bell */}
+      <div className="flex items-center space-x-4">
+        <button
+          onClick={() => setShowNotifications(!showNotifications)}
+          className="relative p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+        >
+          <Bell className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+              {unreadCount}
+            </span>
           )}
-          <div>
-            <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-              Emergency Notifications
-            </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Status: <span className={getStatusColor()}>{getStatusText()}</span>
-            </p>
-          </div>
-        </div>
+        </button>
 
-        <div className="flex items-center space-x-2">
-          {notificationState.permission === 'granted' && notificationState.subscription ? (
-            <button
-              onClick={unsubscribeFromPush}
-              className="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs font-medium transition-colors"
-            >
-              Disable
-            </button>
-          ) : (
-            <button
-              onClick={requestNotificationPermission}
-              disabled={!notificationState.isSupported || notificationState.permission === 'denied'}
-              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded text-xs font-medium transition-colors"
-            >
-              Enable
-            </button>
-          )}
-        </div>
+        {/* Enable Notifications Button */}
+        {!notificationsEnabled && (
+          <button
+            onClick={requestNotificationPermission}
+            className="flex items-center space-x-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            <BellOff className="w-4 h-4" />
+            <span>Enable Notifications</span>
+          </button>
+        )}
       </div>
 
-      {/* Status Message */}
-      {showStatus && (
-        <div className="mt-3 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-          <div className="flex items-center space-x-2">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <span className="text-sm text-green-800 dark:text-green-300">
-              Emergency notifications enabled successfully!
-            </span>
+      {/* Notifications Dropdown */}
+      {showNotifications && (
+        <div className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Notifications
+              </h3>
+              <div className="flex items-center space-x-2">
+                {unreadCount > 0 && (
+                  <button
+                    onClick={markAllAsRead}
+                    className="text-blue-600 hover:text-blue-700 dark:text-blue-400 text-sm font-medium"
+                  >
+                    Mark all read
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowNotifications(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
 
-      {/* Help Text */}
-      {notificationState.permission === 'denied' && (
-        <div className="mt-3 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-          <div className="flex items-center space-x-2">
-            <AlertTriangle className="h-4 w-4 text-yellow-600" />
-            <span className="text-sm text-yellow-800 dark:text-yellow-300">
-              Notifications blocked. Please enable in browser settings.
-            </span>
+          <div className="max-h-96 overflow-y-auto">
+            {notifications.length > 0 ? (
+              <div className="p-2">
+                {notifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={`p-3 mb-2 rounded-lg border-l-4 ${getNotificationColor(notification.type)} ${
+                      !notification.read ? 'ring-1 ring-blue-200 dark:ring-blue-800' : ''
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm">{getNotificationIcon(notification.type)}</span>
+                          <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                            {notification.title}
+                          </h4>
+                          {!notification.read && (
+                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                          {notification.message}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          {new Date(notification.timestamp).toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-1 ml-2">
+                        {!notification.read && (
+                          <button
+                            onClick={() => markAsRead(notification.id)}
+                            className="p-1 text-blue-600 hover:text-blue-700 dark:text-blue-400"
+                            title="Mark as read"
+                          >
+                            <Check className="w-3 h-3" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => removeNotification(notification.id)}
+                          className="p-1 text-red-600 hover:text-red-700 dark:text-red-400"
+                          title="Remove"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+                <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">No notifications</p>
+              </div>
+            )}
           </div>
-        </div>
-      )}
 
-      {!notificationState.isSupported && (
-        <div className="mt-3 p-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
-          <span className="text-sm text-gray-600 dark:text-gray-300">
-            Push notifications not supported in this browser.
-          </span>
+          {/* Notification Settings */}
+          <div className="p-3 border-t border-gray-200 dark:border-gray-700">
+            <button className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
+              <Settings className="w-4 h-4" />
+              <span>Notification Settings</span>
+            </button>
+          </div>
         </div>
       )}
     </div>

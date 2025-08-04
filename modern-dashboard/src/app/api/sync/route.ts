@@ -1,78 +1,63 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db-config';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { pendingData, timestamp, source } = body;
+    const { deviceId, data, timestamp, type } = body;
 
-    // Log sync request
-    console.log('🔄 Background Sync:', {
-      timestamp,
-      source,
-      dataTypes: Object.keys(pendingData || {}),
-      itemCount: pendingData ? Object.keys(pendingData).length : 0
-    });
+    console.log('🔄 Sync request:', { deviceId, type, timestamp });
 
     // In a real implementation, you would:
-    // 1. Validate the request (authentication, device ID, etc.)
-    // 2. Process each type of pending data
-    // 3. Update database with synchronized information
-    // 4. Return status for each data type processed
-    // 5. Handle any conflicts or errors gracefully
+    // 1. Authenticate the request
+    // 2. Validate the device ID
+    // 3. Process different types of sync data
+    // 4. Update the database accordingly
 
-    const syncResults = {
-      processed: 0,
-      errors: 0,
-      skipped: 0
-    };
-
-    if (pendingData) {
-      // Process different types of pending data
-      for (const [dataType] of Object.entries(pendingData)) {
-        try {
-          // Process based on data type
-          switch (dataType) {
-            case 'deviceStatus':
-              // Process device status updates
-              syncResults.processed++;
-              break;
-            case 'locationUpdates':
-              // Process location updates
-              syncResults.processed++;
-              break;
-            case 'emergencyAlerts':
-              // Process emergency alerts
-              syncResults.processed++;
-              break;
-            default:
-              syncResults.skipped++;
-          }
-        } catch (error) {
-          console.error(`❌ Error processing ${dataType}:`, error);
-          syncResults.errors++;
-        }
-      }
-    }
-
+    // For now, just acknowledge the sync
     return NextResponse.json({
       success: true,
-      message: 'Background sync completed successfully',
+      message: 'Data synchronized successfully',
       timestamp: new Date().toISOString(),
-      results: syncResults
+      processed: {
+        deviceId,
+        type,
+        recordCount: Array.isArray(data) ? data.length : 1
+      }
     });
 
   } catch (error) {
-    console.error('❌ Background sync error:', error);
+    console.error('❌ Sync error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to process background sync' },
+      { success: false, error: 'Failed to sync data' },
       { status: 500 }
     );
   }
 }
 
 export async function GET() {
-  return NextResponse.json({
-    message: 'Background sync endpoint is active',
-    timestamp: new Date().toISOString()
-  });
+  try {
+    // Return sync status and available endpoints
+    const deviceCount = await prisma.device.count();
+    
+    return NextResponse.json({
+      message: 'Sync service is active',
+      timestamp: new Date().toISOString(),
+      stats: {
+        connectedDevices: deviceCount,
+        lastSync: new Date().toISOString()
+      },
+      endpoints: {
+        device: '/api/device/sync',
+        location: '/api/location/sync',
+        emergency: '/api/emergency/alert'
+      }
+    });
+  } catch (error) {
+    console.error('❌ Sync status error:', error);
+    return NextResponse.json(
+      { error: 'Failed to get sync status' },
+      { status: 500 }
+    );
+  }
 }

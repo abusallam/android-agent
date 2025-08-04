@@ -1,67 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// In-memory storage for demo (use database in production)
-const subscriptions: Array<{
-  endpoint: string;
-  keys: { p256dh: string; auth: string };
-  timestamp: string;
-}> = [];
-
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { endpoint, keys, action } = body;
+    const subscription = await request.json();
+    
+    // Log the subscription (in production, you'd save this to database)
+    console.log('📱 Push notification subscription:', {
+      endpoint: subscription.endpoint,
+      keys: subscription.keys ? 'present' : 'missing',
+      timestamp: new Date().toISOString()
+    });
 
-    if (action === 'subscribe') {
-      // Store subscription
-      const subscription = { endpoint, keys, timestamp: new Date().toISOString() };
-      subscriptions.push(subscription);
-      
-      console.log('📱 Push subscription registered:', { endpoint: endpoint?.substring(0, 50) + '...' });
+    // In a real implementation, you would:
+    // 1. Validate the subscription object
+    // 2. Store the subscription in the database
+    // 3. Associate it with the current user/device
+    // 4. Set up VAPID keys for push notifications
 
-      return NextResponse.json({
-        success: true,
-        message: 'Push subscription registered successfully'
-      });
-    }
-
-    if (action === 'send-emergency') {
-      const { message, location } = body;
-      
-      console.log(`🚨 Emergency alert: ${message}`);
-      console.log(`📍 Location: ${location?.address || 'Unknown'}`);
-      
-      // In a real implementation, you would send actual push notifications here
-      // For demo purposes, we'll just log and return success
-      
-      return NextResponse.json({
-        success: true,
-        message: `Emergency alert logged: ${message}`,
-        timestamp: new Date().toISOString()
-      });
-    }
-
-    if (action === 'send-notification') {
-      const { title, message } = body;
-      
-      console.log(`🔔 Notification: ${title} - ${message}`);
-      
-      return NextResponse.json({
-        success: true,
-        message: 'Notification sent successfully',
-        timestamp: new Date().toISOString()
-      });
-    }
-
-    return NextResponse.json(
-      { success: false, error: 'Invalid action' },
-      { status: 400 }
-    );
+    return NextResponse.json({
+      success: true,
+      message: 'Push notification subscription saved',
+      timestamp: new Date().toISOString()
+    });
 
   } catch (error) {
-    console.error('❌ Push notification error:', error);
+    console.error('❌ Push subscription error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to process push notification request' },
+      { success: false, error: 'Failed to save push subscription' },
       { status: 500 }
     );
   }
@@ -69,8 +34,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   return NextResponse.json({
-    message: 'Push notification endpoint is active',
-    subscriptions: subscriptions.length,
+    message: 'Push notification subscription endpoint is active',
     timestamp: new Date().toISOString()
   });
 }

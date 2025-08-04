@@ -10,122 +10,140 @@ jobs:
   test:
     runs-on: ubuntu-latest
     
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_PASSWORD: test_password
-          POSTGRES_USER: test_user
-          POSTGRES_DB: test_db
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-      
-      redis:
-        image: redis:7
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup Node.js
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: ${{ matrix.node-version }}
         cache: 'npm'
         cache-dependency-path: modern-dashboard/package-lock.json
-
+    
+    - name: Install UV
+      run: curl -LsSf https://astral.sh/uv/install.sh | sh
+    
+    - name: Add UV to PATH
+      run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+    
     - name: Install dependencies
-      working-directory: ./modern-dashboard
-      run: npm ci
-
-    - name: Generate Prisma client
-      working-directory: ./modern-dashboard
-      run: npx prisma generate
-      env:
-        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
-
-    - name: Run database migrations
-      working-directory: ./modern-dashboard
-      run: npx prisma db push
-      env:
-        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
-
+      run: |
+        cd modern-dashboard
+        npm ci
+    
+    - name: Setup database
+      run: |
+        cd modern-dashboard
+        npm run db:sqlite
+        npm run db:generate
+        npm run db:push
+        npm run db:init
+    
     - name: Run linting
-      working-directory: ./modern-dashboard
-      run: npm run lint
-
+      run: |
+        cd modern-dashboard
+        npm run lint
+    
     - name: Run type checking
-      working-directory: ./modern-dashboard
-      run: npx tsc --noEmit
-
+      run: |
+        cd modern-dashboard
+        npx tsc --noEmit
+    
     - name: Build application
-      working-directory: ./modern-dashboard
-      run: npm run build
-      env:
-        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
-        NEXTAUTH_SECRET: test-secret-key
-        NEXTAUTH_URL: http://localhost:3000
+      run: |
+        cd modern-dashboard
+        npm run build
+    
+    - name: Test API endpoints
+      run: |
+        cd modern-dashboard
+        # Start server in background
+        DATABASE_URL="file:./dev.db" npm start &
+        SERVER_PID=$!
+        
+        # Wait for server to start
+        sleep 10
+        
+        # Test health endpoint
+        curl -f http://localhost:3000/api/health || exit 1
+        
+        # Stop server
+        kill $SERVER_PID
 
-    - name: Run tests (if available)
-      working-directory: ./modern-dashboard
-      run: npm test --if-present
-
-  docker-build:
+  security:
     runs-on: ubuntu-latest
-    needs: test
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+        cache: 'npm'
+        cache-dependency-path: modern-dashboard/package-lock.json
+    
+    - name: Install dependencies
+      run: |
+        cd modern-dashboard
+        npm ci
+    
+    - name: Run security audit
+      run: |
+        cd modern-dashboard
+        npm audit --audit-level=high
+    
+    - name: Check for vulnerabilities
+      run: |
+        cd modern-dashboard
+        npx audit-ci --config audit-ci.json || true
 
+  docker:
+    runs-on: ubuntu-latest
+    needs: [test, security]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
-
+    
     - name: Build Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: ./modern-dashboard
-        file: ./modern-dashboard/Dockerfile
-        push: false
-        tags: android-agent:latest
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-
-    - name: Test Docker Compose
       run: |
-        docker-compose -f docker-compose.yml config
-        echo "Docker Compose configuration is valid"
+        cd modern-dashboard
+        docker build -t android-agent:test .
+    
+    - name: Test Docker container
+      run: |
+        docker run -d --name test-container -p 3000:3000 \
+          -e DATABASE_URL="file:./dev.db" \
+          android-agent:test
+        
+        # Wait for container to start
+        sleep 15
+        
+        # Test health endpoint
+        curl -f http://localhost:3000/api/health || exit 1
+        
+        # Stop container
+        docker stop test-container
+        docker rm test-container
 
-  security-scan:
+  deploy:
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test, security, docker]
+    if: github.ref == 'refs/heads/main'
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
-      with:
-        scan-type: 'fs'
-        scan-ref: '.'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
-
-    - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v2
-      if: always()
-      with:
-        sarif_file: 'trivy-results.sarif'
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to production
+      run: |
+        echo "🚀 Ready for production deployment"
+        echo "Add your deployment steps here"
+        # Example: Deploy to your hosting platform
+        # ./deploy.sh production

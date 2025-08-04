@@ -1,10 +1,11 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma, getDatabaseConfig } from './db-config';
 import { hashPassword } from './auth';
-
-const prisma = new PrismaClient();
 
 export async function initializeDatabase() {
   try {
+    const dbConfig = getDatabaseConfig();
+    console.log(`🗄️ Initializing ${dbConfig.provider} database...`);
+
     // Check if admin user exists
     const existingAdmin = await prisma.user.findUnique({
       where: { username: 'admin' }
@@ -24,19 +25,48 @@ export async function initializeDatabase() {
       });
 
       console.log('✅ Default admin user created (username: admin, password: admin)');
+    } else {
+      console.log('ℹ️ Admin user already exists');
     }
 
-    // Create indexes for better performance (SQLite compatible)
+    // Create indexes for better performance (database-specific)
     try {
-      await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_devices_device_id ON devices(device_id);`;
-      await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_gps_logs_device_timestamp ON gps_logs(device_id, timestamp);`;
-      await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_call_logs_device_date ON call_logs(device_id, date);`;
-      await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_sms_logs_device_date ON sms_logs(device_id, date);`;
-    } catch {
-      console.log('⚠️ Index creation skipped (may already exist)');
+      if (dbConfig.isSQLite) {
+        await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_devices_device_id ON devices(deviceId);`;
+        await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_gps_logs_device_timestamp ON gps_logs(deviceId, timestamp);`;
+        await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_call_logs_device_date ON call_logs(deviceId, date);`;
+        await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_sms_logs_device_date ON sms_logs(deviceId, date);`;
+      } else if (dbConfig.isPostgres) {
+        await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_devices_device_id ON devices("deviceId");`;
+        await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_gps_logs_device_timestamp ON gps_logs("deviceId", timestamp);`;
+        await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_call_logs_device_date ON call_logs("deviceId", date);`;
+        await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_sms_logs_device_date ON sms_logs("deviceId", date);`;
+      }
+      console.log('✅ Database indexes created');
+    } catch (error) {
+      console.log('⚠️ Index creation skipped:', (error as Error).message);
     }
 
-    console.log('✅ Database initialized successfully');
+    // Create sample device for testing (only in development)
+    if (process.env.NODE_ENV === 'development') {
+      const existingDevice = await prisma.device.findFirst();
+      if (!existingDevice) {
+        await prisma.device.create({
+          data: {
+            deviceId: 'test-device-001',
+            name: "Test Device",
+            model: 'Android Test Device',
+            manufacturer: 'Test Manufacturer',
+            version: 'Android 14',
+            isOnline: true,
+            location: JSON.stringify({ latitude: 31.2001, longitude: 29.9187, address: 'Alexandria, Egypt' })
+          }
+        });
+        console.log('✅ Sample test device created');
+      }
+    }
+
+    console.log(`✅ ${dbConfig.provider} database initialized successfully`);
   } catch (error) {
     console.error('❌ Database initialization failed:', error);
     throw error;
