@@ -6,28 +6,24 @@ export async function initializeDatabase() {
     const dbConfig = getDatabaseConfig();
     console.log(`🗄️ Initializing ${dbConfig.provider} database...`);
 
-    // Check if admin user exists
-    const existingAdmin = await prisma.user.findUnique({
+    // Delete existing admin user if exists and recreate with correct password
+    await prisma.user.deleteMany({
       where: { username: 'admin' }
     });
 
-    if (!existingAdmin) {
-      // Create default admin user
-      const hashedPassword = await hashPassword('admin');
-      
-      await prisma.user.create({
-        data: {
-          username: 'admin',
-          password: hashedPassword,
-          email: 'admin@androidagent.local',
-          role: 'ADMIN'
-        }
-      });
+    // Create default admin user
+    const hashedPassword = await hashPassword('admin123');
+    
+    await prisma.user.create({
+      data: {
+        username: 'admin',
+        password: hashedPassword,
+        email: 'admin@androidagent.local',
+        role: 'ADMIN'
+      }
+    });
 
-      console.log('✅ Default admin user created (username: admin, password: admin)');
-    } else {
-      console.log('ℹ️ Admin user already exists');
-    }
+    console.log('✅ Default admin user created (username: admin, password: admin123)');
 
     // Create indexes for better performance (database-specific)
     try {

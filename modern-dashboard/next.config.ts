@@ -54,7 +54,7 @@ const withPWAConfig = withPWA({
     },
   ],
   buildExcludes: [/middleware-manifest\.json$/],
-  disable: process.env.NODE_ENV === 'development', // Disable PWA in development to avoid webpack errors
+  disable: false, // Enable PWA in all environments
 });
 
 export default withPWAConfig(nextConfig);

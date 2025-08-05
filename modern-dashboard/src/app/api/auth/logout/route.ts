@@ -1,33 +1,42 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+import { getSession, clearAuthCookie } from '@/lib/auth';
 
-export async function POST() {
+const prisma = new PrismaClient();
+
+export async function POST(request: NextRequest) {
   try {
-    // Create response
-    const response = NextResponse.json({
+    // Get current session
+    const session = await getSession();
+    
+    if (session) {
+      // Delete session from database
+      await prisma.session.deleteMany({
+        where: { userId: session.id }
+      });
+    }
+
+    // Clear auth cookie
+    await clearAuthCookie();
+
+    return NextResponse.json({
       success: true,
       message: 'Logged out successfully'
     });
 
-    // Clear the auth cookie
-    response.cookies.set('auth-token', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 0, // Expire immediately
-      path: '/',
-    });
-
-    return response;
   } catch (error) {
     console.error('Logout error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { success: false, message: 'Logout failed' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
 export async function GET() {
-  // Allow GET requests for logout as well
-  return POST();
+  return NextResponse.json({
+    message: 'Logout endpoint - POST to logout'
+  });
 }

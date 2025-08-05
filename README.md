@@ -1,443 +1,291 @@
-# 🛡️ Android Agent - Modern PWA Dashboard
+# Android Agent AI - Enterprise Security Platform
 
-A modern, secure Progressive Web App (PWA) for comprehensive Android device management and monitoring with real-time tracking, emergency alerts, and advanced geolocation features.
+<div align="center">
 
-![Android Agent Dashboard](https://img.shields.io/badge/PWA-Ready-green) ![Next.js](https://img.shields.io/badge/Next.js-15-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![SQLite](https://img.shields.io/badge/SQLite-Ready-orange) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Ready-blue)
+![Android Agent AI](modern-dashboard/public/logo.png)
 
-## 🚀 Quick Start
+**Modern Android device management and monitoring platform with AI-powered intelligence**
 
-### One-Command Setup
+[![Next.js](https://img.shields.io/badge/Next.js-15.4.3-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4.17-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
+[![ShadCN/UI](https://img.shields.io/badge/ShadCN%2FUI-Latest-000000?style=flat-square)](https://ui.shadcn.com/)
+[![PWA](https://img.shields.io/badge/PWA-Enabled-5A0FC8?style=flat-square)](https://web.dev/progressive-web-apps/)
+
+</div>
+
+## 🚀 **Overview**
+
+Android Agent AI is a cutting-edge Progressive Web App (PWA) designed for comprehensive Android device management and monitoring. Built with modern technologies, it provides administrators with a powerful, cross-platform interface for real-time device oversight and control.
+
+### ✨ **Key Features**
+
+- 🔐 **Enterprise Security** - JWT authentication with bcrypt password hashing
+- 📱 **Progressive Web App** - Cross-platform installation (Android, iOS, Desktop)
+- 🌍 **Global Accessibility** - Multilingual support (Arabic/English) with RTL layout
+- 📊 **Real-Time Monitoring** - Live GPS tracking with interactive maps
+- 🎨 **Modern UI** - ShadCN/UI components with dark theme
+- 🤖 **AI-Ready Architecture** - Framework for intelligent device management
+- 🗺️ **Advanced Geolocation** - Mapbox integration with geofencing
+- 🎥 **LiveKit Streaming** - Real-time video, audio, and screen sharing
+
+## 🏗️ **Architecture**
+
+### **Modern Stack**
+- **Frontend**: Next.js 15 + React 19 + TypeScript 5
+- **UI Library**: ShadCN/UI + Tailwind CSS 3.4
+- **Backend**: Next.js API Routes + Prisma ORM
+- **Database**: PostgreSQL 15 + Redis 7
+- **Authentication**: JWT + bcrypt
+- **Real-time**: Native WebSockets + Server-Sent Events
+- **PWA**: Service Workers + Web APIs
+
+### **Infrastructure**
+- **Containerization**: Docker with multi-service setup
+- **Orchestration**: Docker Compose for easy deployment
+- **Health Monitoring**: Built-in health checks and logging
+- **Security**: Comprehensive security headers and validation
+
+## 🚀 **Quick Start**
+
+### **Prerequisites**
+- Node.js 18+ 
+- Docker & Docker Compose
+- PostgreSQL 15 (or use Docker setup)
+
+### **Development Setup**
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd android-agent
+   ```
+
+2. **Start with Docker (Recommended)**
+   ```bash
+   docker-compose up --build
+   ```
+
+3. **Or run locally**
+   ```bash
+   cd modern-dashboard
+   npm install
+   npm run db:setup
+   npm run dev
+   ```
+
+4. **Access the application**
+   - **Local**: http://localhost:3000
+   - **Login**: admin / admin123
+
+### **Production Deployment**
 ```bash
-cd modern-dashboard
-./start-clean.sh
+# Production deployment
+docker-compose up -d --build
+
+# Health check
+curl http://localhost:3000/api/health
 ```
 
-This will:
-- 🏗️ Build the application in production mode
-- 🚀 Start the server (eliminates webpack runtime errors)
-- 🌐 Launch ngrok tunnel for mobile access
-- 📱 Display both PC and mobile URLs
+## 📱 **PWA Features**
 
-### Manual Setup
-```bash
-cd modern-dashboard
-npm install
-npm run db:setup
-npm run build
-DATABASE_URL="file:./dev.db" node .next/standalone/server.js
-```
-
-## 🌟 Features
-
-### 🔐 **Enterprise Security**
-- JWT authentication with bcrypt password hashing
-- Secure API endpoints with comprehensive validation
-- Role-based access control and session management
-- HTTPS/TLS support with modern security headers
-
-### 📱 **Progressive Web App**
-- **Installable** on all platforms (Android, iOS, Desktop)
+### **Installation**
+- **Add to Home Screen** on any device
 - **Offline Support** with service workers
 - **Background Sync** for continuous monitoring
 - **Push Notifications** for real-time alerts
-- **Auto-start** capability on device boot
-- **Native Experience** with touch optimization
 
-### 🗺️ **Advanced Geolocation**
-- **Interactive Maps** with real-time device tracking
-- **Geofencing** with location-based alerts
-- **Route History** and movement analysis
-- **Heatmaps** for usage pattern visualization
+### **Cross-Platform**
+- **Android** - Native app experience
+- **iOS** - Full PWA support
+- **Desktop** - Windows, macOS, Linux
+- **Web** - Any modern browser
 
-### 📊 **Real-Time Monitoring**
-- **Live Device Status** with battery, network, and GPS tracking
-- **Emergency Alert System** with instant notifications
-- **Communication Logs** (calls, SMS, contacts)
-- **File Management** with remote access
-- **WiFi Network** scanning and monitoring
-- **Application Inventory** and permission tracking
+## 🎨 **UI/UX Features**
 
-### 🎨 **Modern Interface**
-- **Dark/Light Theme** with automatic system detection
-- **Responsive Design** optimized for all screen sizes
-- **Touch-Friendly** mobile-first design
-- **Real-time Updates** with live data streaming
+### **Modern Design System**
+- **ShadCN/UI Components** - Professional, accessible components
+- **Dark Theme** - Consistent dark mode throughout
+- **Glass Morphism** - Modern backdrop blur effects
+- **Responsive Design** - Mobile-first approach
+- **Animations** - Smooth transitions and micro-interactions
 
-## 🏗️ Architecture
+### **Accessibility**
+- **WCAG Compliant** - Meets accessibility standards
+- **Keyboard Navigation** - Full keyboard support
+- **Screen Reader** - Compatible with assistive technologies
+- **High Contrast** - Optimized for readability
 
-### Technology Stack
-- **Frontend**: Next.js 15 + React 19 + TypeScript
-- **Styling**: Tailwind CSS + Radix UI components
-- **Database**: SQLite (dev) / PostgreSQL (prod) + Prisma ORM
-- **Authentication**: JWT tokens + bcrypt hashing
-- **PWA**: Service Workers + Web APIs
-- **Real-time**: WebSockets + Server-Sent Events
+## 🔐 **Security Features**
 
-### Database Support
-- **SQLite** for local development and small deployments
-- **PostgreSQL** for production and enterprise use
-- **Automatic switching** based on environment
-- **Prisma ORM** for type-safe database access
+### **Authentication & Authorization**
+- **JWT Tokens** - Stateless authentication
+- **bcrypt Hashing** - Industry-standard password protection
+- **Secure Cookies** - HttpOnly, Secure, SameSite
+- **Role-Based Access** - Granular permission control
 
-## 🔧 Installation & Setup
+### **Data Protection**
+- **HTTPS/TLS** - Encrypted communication
+- **Input Validation** - Comprehensive request sanitization
+- **CORS Configuration** - Proper cross-origin security
+- **Security Headers** - CSP, HSTS, and more
 
-### Prerequisites
-- Node.js 18+ 
-- npm or yarn
-- UV package manager (for Python tools)
-- ngrok (for mobile testing)
+## 📊 **Monitoring & Analytics**
 
-### Complete Setup (Recommended)
+### **Real-Time Dashboard**
+- **Device Status** - Live monitoring of connected devices
+- **GPS Tracking** - Interactive maps with real-time location
+- **System Metrics** - Performance and health monitoring
+- **Alert Management** - Intelligent notification system
+
+### **Data Visualization**
+- **Interactive Charts** - Real-time data visualization
+- **Responsive Tables** - Device and activity listings
+- **Status Indicators** - Visual health and status displays
+- **Export Capabilities** - Data export and reporting
+
+## 🛠️ **Development**
+
+### **Project Structure**
+```
+android-agent/
+├── modern-dashboard/          # Next.js PWA application
+│   ├── src/
+│   │   ├── app/              # Next.js App Router
+│   │   ├── components/       # React components
+│   │   │   └── ui/          # ShadCN/UI components
+│   │   ├── contexts/        # React contexts
+│   │   ├── hooks/           # Custom hooks
+│   │   └── lib/             # Utilities
+│   ├── public/              # Static assets
+│   └── prisma/              # Database schema
+├── .kiro/                   # Kiro IDE configuration
+├── docker-compose.yml       # Multi-service setup
+└── docs/                    # Documentation
+```
+
+### **Available Scripts**
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd android-agent
+# Development
+npm run dev              # Start development server
+npm run build           # Build for production
+npm run start           # Start production server
 
-# Run complete setup (includes UV package manager)
-./setup-complete.sh
-
-# Start development
-./run-dev.sh
-```
-
-### Manual Development Setup
-```bash
-# Clone the repository
-git clone <repository-url>
-cd android-agent
-
-# Install UV package manager (if not installed)
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Setup Node.js project
-cd modern-dashboard
-npm install
-
-# Set up SQLite database
-cp prisma/schema-sqlite.prisma prisma/schema.prisma
-npm run db:generate
-npm run db:push
-npm run db:init
-
-# Start development (production mode - no webpack errors)
-./start-clean.sh
-```
-
-### Production Setup
-```bash
-# Set up PostgreSQL
-cp prisma/schema-postgres.prisma prisma/schema.prisma
-export DATABASE_URL="postgresql://user:password@host:port/database"
-
-# Build and start
-npm run build
-DATABASE_URL="your-postgres-url" node .next/standalone/server.js
-```
-
-## 🌐 Access URLs
-
-### 🖥️ **PC Access**
-- **Local**: `http://localhost:3000`
-- **Network**: `http://your-ip:3000`
-
-### 📱 **Mobile Access**
-- **ngrok Tunnel**: Provided when running `./start-clean.sh`
-- **Local Network**: `http://your-ip:3000` (same WiFi required)
-
-### 🔑 **Default Login**
-- **Username**: `admin`
-- **Password**: `admin`
-
-## 📱 PWA Installation
-
-### Mobile Installation
-1. Open the ngrok URL on your mobile device
-2. Look for "Add to Home Screen" prompt
-3. Follow installation instructions
-4. App will work offline and can auto-start
-
-### Desktop Installation
-1. Open `http://localhost:3000` in Chrome/Edge
-2. Look for install icon in address bar
-3. Click to install as desktop app
-
-## 🗄️ Database Management
-
-### Available Scripts
-```bash
-# Database operations
-npm run db:generate     # Generate Prisma client
-npm run db:push         # Push schema to database
-npm run db:migrate      # Run migrations (PostgreSQL)
-npm run db:init         # Initialize with default data
-npm run db:studio       # Open database browser
-npm run db:setup        # Complete setup
-npm run db:reset        # Reset database
-
-# Switch database types
-npm run db:sqlite       # Switch to SQLite
-npm run db:postgres     # Switch to PostgreSQL
-```
-
-### Database Configuration
-```env
-# SQLite (Development)
-DATABASE_URL="file:./dev.db"
-
-# PostgreSQL (Production)
-DATABASE_URL="postgresql://user:password@host:port/database"
-```
-
-## 🔌 API Endpoints
-
-### Authentication
-- `POST /api/auth/login` - User login
-- `POST /api/auth/logout` - User logout
-
-### Device Management
-- `POST /api/device/sync` - Device status synchronization
-- `POST /api/location/sync` - GPS location updates
-- `POST /api/emergency/alert` - Emergency alerts
-
-### System
-- `GET /api/health` - Health check and system status
-- `POST /api/sync` - General data synchronization
-- `POST /api/push/subscribe` - Push notification subscription
-
-## 🎯 Dashboard Components
-
-### 📊 **Status Overview**
-- Real-time device statistics
-- Battery levels and network status
-- GPS tracking status
-- Active alerts counter
-
-### 🗺️ **Interactive Map**
-- Live device location tracking
-- Clickable device markers
-- Location accuracy indicators
-- Map controls and navigation
-
-### 🚨 **Emergency Panel**
-- Panic alert system
-- Emergency contacts
-- Quick action buttons
-- Alert history
-
-### 📱 **Device Status Cards**
-- Detailed device information
-- Battery and network status
-- Last seen timestamps
-- Quick action buttons
-
-### 🔔 **Notification Manager**
-- Real-time notifications
-- Alert management
-- Notification history
-- Settings and preferences
-
-### 📱 **PWA Installer**
-- Installation status
-- Auto-start configuration
-- Permission management
-- Setup wizard
-
-## 🔧 Configuration
-
-### Environment Variables
-```env
 # Database
-DATABASE_URL="file:./dev.db"
+npm run db:setup        # Initialize database
+npm run db:migrate      # Run migrations
+npm run db:studio       # Open Prisma Studio
+
+# Testing
+npm run lint            # Run ESLint
+npm run type-check      # TypeScript checking
+```
+
+### **Environment Configuration**
+```bash
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/android_agent"
 
 # Authentication
-NEXTAUTH_SECRET="your-super-secure-secret-key"
-NEXTAUTH_URL="http://localhost:3000"
+JWT_SECRET="your-secret-key"
+BCRYPT_ROUNDS=12
 
-# Optional: Redis for sessions
-REDIS_URL="redis://localhost:6379"
-
-# PWA Configuration
-NEXT_PUBLIC_WS_URL="ws://localhost:3000"
-ENABLE_BACKGROUND_SYNC="true"
-LOCATION_SYNC_INTERVAL="300000"
-DEVICE_SYNC_INTERVAL="600000"
+# PWA
+NEXT_PUBLIC_PWA_NAME="Android Agent AI"
 ```
 
-### Docker Deployment
-```bash
-# Using Docker Compose
-docker-compose up --build -d
+## 🔧 **API Endpoints**
 
-# Manual Docker build
-docker build -t android-agent .
-docker run -p 3000:3000 -e DATABASE_URL="your-db-url" android-agent
-```
+### **Authentication**
+- `POST /api/auth/login` - User login
+- `POST /api/auth/logout` - User logout
+- `GET /api/auth/me` - Get current user
 
-## 🐛 Troubleshooting
+### **Device Management**
+- `GET /api/dashboard` - Dashboard data
+- `POST /api/device/sync` - Device synchronization
+- `GET /api/location/sync` - Location updates
 
-### Common Issues
+### **System**
+- `GET /api/health` - Health check
+- `POST /api/emergency/alert` - Emergency alerts
 
-**Webpack Runtime Errors**
-- ✅ **Solution**: Use production mode with `./start-clean.sh`
-- The script builds and runs in production mode, eliminating webpack development errors
+## 🌟 **Recent Enhancements**
 
-**CSS Not Loading**
-- ✅ **Solution**: Tailwind CSS is properly configured
-- Run `npm run build` to ensure CSS is compiled
+### **CSS & Theming System (Latest)**
+- ✅ **Fixed Tailwind CSS v4 → v3** - Resolved compilation issues
+- ✅ **ShadCN/UI Integration** - Professional component library
+- ✅ **Dark Theme System** - Consistent theming throughout
+- ✅ **Glass Morphism Effects** - Modern backdrop blur styling
+- ✅ **Responsive Design** - Mobile-first approach
+- ✅ **Animation System** - Smooth transitions and effects
 
-**Mobile Access Issues**
-- ✅ **Solution**: Use ngrok tunnel provided by the startup script
-- Ensure mobile device can access the ngrok URL
+### **PWA Capabilities**
+- ✅ **Service Workers** - Offline functionality
+- ✅ **Background Sync** - Continuous data synchronization
+- ✅ **Push Notifications** - Real-time alerts
+- ✅ **Installation** - Add to home screen
 
-**Database Connection Errors**
-- ✅ **Solution**: Run `npm run db:init` to initialize the database
-- Check DATABASE_URL environment variable
+### **Security Improvements**
+- ✅ **JWT Authentication** - Secure token-based auth
+- ✅ **Password Hashing** - bcrypt implementation
+- ✅ **Input Validation** - Comprehensive sanitization
+- ✅ **Security Headers** - Modern security practices
 
-### Debug Commands
-```bash
-# Check server logs
-tail -f prod-server.log
+## 🚧 **Roadmap**
 
-# Check ngrok status
-curl http://localhost:4040/api/tunnels
+### **Phase 1: Core Enhancements** (Next)
+- [ ] **Interactive Maps** - Mapbox integration with real-time tracking
+- [ ] **Advanced Device Management** - Comprehensive device control
+- [ ] **Real-time Notifications** - WebSocket-based alert system
+- [ ] **Data Visualization** - Charts and analytics dashboard
 
-# Test API health
-curl http://localhost:3000/api/health
+### **Phase 2: AI Integration**
+- [ ] **Machine Learning** - Anomaly detection and pattern recognition
+- [ ] **Natural Language** - Voice and text command interface
+- [ ] **Predictive Analytics** - Proactive device management
+- [ ] **Automated Responses** - Intelligent action execution
 
-# Open database browser
-npm run db:studio
-```
+### **Phase 3: Advanced Features**
+- [ ] **Multi-tenant Support** - Organization management
+- [ ] **Advanced Reporting** - Custom dashboard creation
+- [ ] **API Integrations** - Third-party service connections
+- [ ] **Mobile App** - Native mobile companion
 
-## 📦 UV Package Manager Integration
+## 📚 **Documentation**
 
-This project includes UV package manager for Python development tools and utilities:
+- [**API Documentation**](docs/api.md) - Complete API reference
+- [**Deployment Guide**](docs/deployment.md) - Production setup
+- [**Development Guide**](docs/development.md) - Contributing guidelines
+- [**Architecture Overview**](docs/architecture.md) - System design
 
-### UV Commands
-```bash
-# Install UV (if not already installed)
-curl -LsSf https://astral.sh/uv/install.sh | sh
+## 🤝 **Contributing**
 
-# Install development dependencies
-uv add --dev black flake8 pytest mypy
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
-# Run Python tools
-uv run black .
-uv run flake8 .
-uv run pytest
-
-# Create virtual environment
-uv venv
-source .venv/bin/activate  # Linux/Mac
-```
-
-### Available UV Tools
-- **black**: Code formatting
-- **flake8**: Linting and style checking
-- **pytest**: Testing framework
-- **mypy**: Type checking
-
-## 🚀 Performance
-
-- **Build Size**: ~100KB First Load JS
-- **Database**: Optimized queries with indexes
-- **Caching**: Service worker caching strategies
-- **Real-time**: Efficient WebSocket connections
-- **PWA**: Offline-first architecture
-
-## 🔒 Security Features
-
-- **JWT Authentication** with secure cookies
-- **bcrypt Password Hashing** (12 rounds)
-- **Session Management** with Redis support
-- **CORS Configuration** for cross-origin requests
-- **Security Headers** (CSP, HSTS, etc.)
-- **Input Validation** and sanitization
-- **Rate Limiting** for API endpoints
-
-## 🤝 Contributing
-
+### **Development Workflow**
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
-## 📄 License
+## 📄 **License**
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
+## 🆘 **Support**
 
-- **Documentation**: Check this README and `SETUP_SUMMARY.md`
-- **Issues**: Create GitHub issues for bugs or feature requests
-- **Health Check**: Visit `/api/health` for system status
-- **Database Browser**: Run `npm run db:studio`
+- **Issues**: [GitHub Issues](https://github.com/your-repo/android-agent/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/your-repo/android-agent/discussions)
+- **Documentation**: [Wiki](https://github.com/your-repo/android-agent/wiki)
 
 ---
 
-## 🎉 **Ready for GitHub! Complete Intelligence Platform**
+<div align="center">
 
-The Android Agent AI is now production-ready with comprehensive testing and user feedback integration:
-- ✅ **Custom Assets Integrated** - Background image and logo properly implemented
-- ✅ **Mobile Responsive** - Fixed CSS breaking, touch-friendly interface
-- ✅ **Local Development Tested** - All core features validated on PC and mobile
-- ✅ **LiveKit Infrastructure** - Complete WebRTC streaming setup ready
-- ✅ **Intelligence Theme** - Professional AI-focused design with custom branding
-- ✅ **PWA Capabilities** - Installable, offline support, background sync
-- ✅ **Performance Optimized** - 109KB bundle, 9-second build time
-- ✅ **Comprehensive Documentation** - Complete guides and testing reports
+**Built with ❤️ using modern web technologies**
 
-## 🚀 **Quick Start Options**
+[Next.js](https://nextjs.org/) • [TypeScript](https://www.typescriptlang.org/) • [Tailwind CSS](https://tailwindcss.com/) • [ShadCN/UI](https://ui.shadcn.com/) • [Prisma](https://www.prisma.io/)
 
-### **🐳 Docker Infrastructure (Recommended)**
-```bash
-# Start complete infrastructure with LiveKit + COTURN
-./docker-start.sh start
-
-# Test all streaming capabilities
-./test-docker-setup.sh
-
-# Access: http://localhost:3000
-```
-
-### **💻 Local Development**
-```bash
-# Start local development
-cd modern-dashboard
-./start-clean.sh
-
-# Access: http://localhost:3000
-# Mobile: https://93aab4c1e00c.ngrok-free.app
-```
-
-**Default Login**: admin / admin
-
-## 📹 **Streaming Capabilities**
-
-- **Video Streaming** - Camera access with LiveKit WebRTC
-- **Audio Communication** - Two-way audio with noise cancellation
-- **Screen Sharing** - Real-time desktop capture
-- **NAT Traversal** - COTURN server for firewall bypass
-- **Multi-device Support** - Concurrent stream management
-- **Emergency Communication** - Priority streaming system
-- **Session Recording** - Video/audio session capture
-- **Adaptive Quality** - Bandwidth-based optimization
-
-## 🌐 **Access Information**
-
-- **🖥️ PC Dashboard**: `http://localhost:3000`
-- **📱 Mobile Access**: `https://93aab4c1e00c.ngrok-free.app`
-- **🎥 LiveKit Server**: `ws://localhost:7880` (Docker)
-- **🌐 COTURN Server**: `stun:localhost:3478` (Docker)
-- **🗄️ Database**: SQLite (dev) / PostgreSQL (prod)
-
-## 📊 **Project Status**
-
-- **Version**: 1.0.0
-- **Status**: ✅ Production Ready
-- **Bundle Size**: 104KB (optimized)
-- **Dependencies**: 809 packages, 0 vulnerabilities
-- **Features**: Complete streaming infrastructure
-- **Documentation**: Comprehensive guides and testing
-
-**See [PROJECT_STATUS.md](PROJECT_STATUS.md) for detailed status information.**
+</div>

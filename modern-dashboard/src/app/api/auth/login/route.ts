@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyPassword, createToken } from '@/lib/auth';
-import { prisma } from '@/lib/db-config';
+import { PrismaClient } from '@prisma/client';
+import { verifyPassword, createToken, setAuthCookie } from '@/lib/auth';
+
+const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
   try {
-    const { username, password } = await request.json();
+    const body = await request.json();
+    const { username, password } = body;
 
     if (!username || !password) {
       return NextResponse.json(
-        { error: 'Username and password are required' },
+        { success: false, message: 'Username and password are required' },
         { status: 400 }
       );
     }
@@ -20,7 +23,7 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { error: 'Invalid credentials' },
+        { success: false, message: 'Invalid credentials' },
         { status: 401 }
       );
     }
@@ -29,7 +32,7 @@ export async function POST(request: NextRequest) {
     const isValidPassword = await verifyPassword(password, user.password);
     if (!isValidPassword) {
       return NextResponse.json(
-        { error: 'Invalid credentials' },
+        { success: false, message: 'Invalid credentials' },
         { status: 401 }
       );
     }
@@ -41,30 +44,42 @@ export async function POST(request: NextRequest) {
       role: user.role
     });
 
-    // Set secure cookie
-    const response = NextResponse.json({
+    // Create session in database
+    const session = await prisma.session.create({
+      data: {
+        sessionToken: token,
+        userId: user.id,
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+      }
+    });
+
+    // Set auth cookie
+    await setAuthCookie(token);
+
+    return NextResponse.json({
       success: true,
       user: {
         id: user.id,
         username: user.username,
+        email: user.email,
         role: user.role
-      }
+      },
+      token
     });
 
-    response.cookies.set('auth-token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 60 * 60 * 24, // 24 hours
-      path: '/',
-    });
-
-    return response;
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { success: false, message: 'Authentication failed' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
+}
+
+export async function GET() {
+  return NextResponse.json({
+    message: 'Authentication endpoint - POST to login'
+  });
 }
