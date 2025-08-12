@@ -1,68 +1,48 @@
-import { prisma, getDatabaseConfig } from './db-config';
+import { PrismaClient } from '@prisma/client';
 import { hashPassword } from './auth';
+
+const prisma = new PrismaClient();
+
+// Export prisma instance for use in other modules
+export { prisma };
 
 export async function initializeDatabase() {
   try {
-    const dbConfig = getDatabaseConfig();
-    console.log(`🗄️ Initializing ${dbConfig.provider} database...`);
+    console.log('🔧 Initializing database...');
 
-    // Delete existing admin user if exists and recreate with correct password
-    await prisma.user.deleteMany({
-      where: { username: 'admin' }
+    // Check if ROOT_ADMIN exists
+    const rootAdmin = await prisma.user.findFirst({
+      where: { role: 'ROOT_ADMIN' }
     });
 
-    // Create default admin user
-    const hashedPassword = await hashPassword('admin123');
-    
-    await prisma.user.create({
-      data: {
-        username: 'admin',
-        password: hashedPassword,
-        email: 'admin@androidagent.local',
-        role: 'ADMIN'
-      }
-    });
+    if (!rootAdmin) {
+      console.log('👑 Creating ROOT_ADMIN user...');
+      
+      // Create default ROOT_ADMIN user
+      const hashedPassword = await hashPassword('admin123');
+      
+      const newRootAdmin = await prisma.user.create({
+        data: {
+          username: 'admin',
+          password: hashedPassword,
+          email: 'admin@androidagent.local',
+          role: 'ROOT_ADMIN',
+          isActive: true
+        }
+      });
 
-    console.log('✅ Default admin user created (username: admin, password: admin123)');
-
-    // Create indexes for better performance (database-specific)
-    try {
-      if (dbConfig.isSQLite) {
-        await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_devices_device_id ON devices(deviceId);`;
-        await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_gps_logs_device_timestamp ON gps_logs(deviceId, timestamp);`;
-        await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_call_logs_device_date ON call_logs(deviceId, date);`;
-        await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_sms_logs_device_date ON sms_logs(deviceId, date);`;
-      } else if (dbConfig.isPostgres) {
-        await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_devices_device_id ON devices("deviceId");`;
-        await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_gps_logs_device_timestamp ON gps_logs("deviceId", timestamp);`;
-        await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_call_logs_device_date ON call_logs("deviceId", date);`;
-        await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS idx_sms_logs_device_date ON sms_logs("deviceId", date);`;
-      }
-      console.log('✅ Database indexes created');
-    } catch (error) {
-      console.log('⚠️ Index creation skipped:', (error as Error).message);
+      console.log('✅ ROOT_ADMIN user created successfully');
+      console.log('📋 Default credentials:');
+      console.log('   Username: admin');
+      console.log('   Password: admin123');
+      console.log('   ⚠️  Please change the default password after first login!');
+      
+      return newRootAdmin;
+    } else {
+      console.log('✅ ROOT_ADMIN user already exists');
+      return rootAdmin;
     }
 
-    // Create sample device for testing (only in development)
-    if (process.env.NODE_ENV === 'development') {
-      const existingDevice = await prisma.device.findFirst();
-      if (!existingDevice) {
-        await prisma.device.create({
-          data: {
-            deviceId: 'test-device-001',
-            name: "Test Device",
-            model: 'Android Test Device',
-            manufacturer: 'Test Manufacturer',
-            version: 'Android 14',
-            isOnline: true,
-            location: JSON.stringify({ latitude: 31.2001, longitude: 29.9187, address: 'Alexandria, Egypt' })
-          }
-        });
-        console.log('✅ Sample test device created');
-      }
-    }
-
-    console.log(`✅ ${dbConfig.provider} database initialized successfully`);
   } catch (error) {
     console.error('❌ Database initialization failed:', error);
     throw error;
@@ -71,9 +51,171 @@ export async function initializeDatabase() {
   }
 }
 
-// Run initialization if this file is executed directly
-if (require.main === module) {
-  initializeDatabase()
-    .then(() => process.exit(0))
-    .catch(() => process.exit(1));
+export async function createSampleData() {
+  try {
+    console.log('📊 Creating sample data...');
+
+    // Check if we already have sample devices
+    const deviceCount = await prisma.device.count();
+    
+    if (deviceCount === 0) {
+      console.log('📱 Creating sample devices...');
+      
+      // Create sample devices
+      const sampleDevices = [
+        {
+          deviceId: 'android-device-001',
+          name: 'Child\'s Phone',
+          model: 'Samsung Galaxy A54',
+          manufacturer: 'Samsung',
+          version: 'Android 13',
+          isOnline: true,
+          ipAddress: '192.168.1.100',
+          location: JSON.stringify({
+            latitude: 31.2001,
+            longitude: 29.9187,
+            address: 'Alexandria, Egypt'
+          })
+        },
+        {
+          deviceId: 'android-device-002',
+          name: 'Work Tablet',
+          model: 'iPad Pro 11"',
+          manufacturer: 'Apple',
+          version: 'iOS 17',
+          isOnline: true,
+          ipAddress: '192.168.1.101',
+          location: JSON.stringify({
+            latitude: 30.0444,
+            longitude: 31.2357,
+            address: 'Cairo, Egypt'
+          })
+        },
+        {
+          deviceId: 'android-device-003',
+          name: 'Backup Device',
+          model: 'Samsung Galaxy S21',
+          manufacturer: 'Samsung',
+          version: 'Android 12',
+          isOnline: false,
+          ipAddress: '192.168.1.102',
+          location: JSON.stringify({
+            latitude: 30.0444,
+            longitude: 31.2357,
+            address: 'Cairo, Egypt'
+          })
+        }
+      ];
+
+      for (const device of sampleDevices) {
+        await prisma.device.create({ data: device });
+      }
+
+      console.log('✅ Sample devices created');
+    }
+
+    // Create sample GPS logs
+    const gpsLogCount = await prisma.gpsLog.count();
+    if (gpsLogCount === 0) {
+      console.log('📍 Creating sample GPS logs...');
+      
+      const devices = await prisma.device.findMany();
+      
+      for (const device of devices) {
+        // Create some GPS logs for each device
+        for (let i = 0; i < 5; i++) {
+          await prisma.gpsLog.create({
+            data: {
+              deviceId: device.id,
+              latitude: 31.2001 + (Math.random() - 0.5) * 0.01,
+              longitude: 29.9187 + (Math.random() - 0.5) * 0.01,
+              accuracy: 5 + Math.random() * 10,
+              timestamp: new Date(Date.now() - i * 60 * 60 * 1000) // Last 5 hours
+            }
+          });
+        }
+      }
+
+      console.log('✅ Sample GPS logs created');
+    }
+
+    console.log('✅ Sample data initialization complete');
+
+  } catch (error) {
+    console.error('❌ Sample data creation failed:', error);
+    throw error;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+export async function getDashboardStats() {
+  try {
+    const [
+      totalDevices,
+      onlineDevices,
+      totalUsers,
+      activeUsers,
+      recentGpsLogs,
+      recentSessions
+    ] = await Promise.all([
+      prisma.device.count(),
+      prisma.device.count({ where: { isOnline: true } }),
+      prisma.user.count(),
+      prisma.user.count({ where: { isActive: true } }),
+      prisma.gpsLog.count({
+        where: {
+          timestamp: {
+            gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // Last 24 hours
+          }
+        }
+      }),
+      prisma.session.count({
+        where: {
+          createdAt: {
+            gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // Last 24 hours
+          }
+        }
+      })
+    ]);
+
+    return {
+      devices: {
+        total: totalDevices,
+        online: onlineDevices,
+        offline: totalDevices - onlineDevices
+      },
+      users: {
+        total: totalUsers,
+        active: activeUsers,
+        inactive: totalUsers - activeUsers
+      },
+      activity: {
+        recentGpsLogs,
+        recentSessions
+      },
+      stats: {
+        avgBattery: 75, // Mock data - would calculate from device data
+        gpsAccuracy: '±5m',
+        networkStatus: 'WiFi',
+        alerts: 0
+      }
+    };
+
+  } catch (error) {
+    console.error('❌ Failed to get dashboard stats:', error);
+    return {
+      devices: { total: 0, online: 0, offline: 0 },
+      users: { total: 0, active: 0, inactive: 0 },
+      activity: { recentGpsLogs: 0, recentSessions: 0 },
+      stats: { avgBattery: 0, gpsAccuracy: 'N/A', networkStatus: 'Unknown', alerts: 0 }
+    };
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+// Initialize database on module load in development
+if (process.env.NODE_ENV === 'development') {
+  initializeDatabase().catch(console.error);
 }

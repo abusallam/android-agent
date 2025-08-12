@@ -41,11 +41,11 @@ export async function GET() {
       }
     });
 
-    // Calculate average battery (mock for now, will be real when we have battery data)
-    const avgBattery = Math.floor(Math.random() * 30) + 70; // 70-100%
+    // Calculate average battery (fixed value to prevent hydration mismatch)
+    const avgBattery = 85; // Fixed value until we have real battery data
 
-    // Get recent alerts count (mock for now)
-    const alertsCount = Math.floor(Math.random() * 5);
+    // Get recent alerts count (fixed value to prevent hydration mismatch)
+    const alertsCount = 2;
 
     // Get system health
     const systemHealth = {

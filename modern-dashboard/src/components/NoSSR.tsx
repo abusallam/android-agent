@@ -8,13 +8,13 @@ interface NoSSRProps {
 }
 
 export function NoSSR({ children, fallback = null }: NoSSRProps) {
-  const [mounted, setMounted] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    setIsMounted(true);
   }, []);
 
-  if (!mounted) {
+  if (!isMounted) {
     return <>{fallback}</>;
   }
 

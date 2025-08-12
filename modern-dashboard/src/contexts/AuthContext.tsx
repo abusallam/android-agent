@@ -7,7 +7,9 @@ interface User {
   id: string;
   username: string;
   email?: string;
-  role: string;
+  role: 'ROOT_ADMIN' | 'PROJECT_ADMIN' | 'USER';
+  projectId?: string;
+  assignedAdminId?: string;
 }
 
 interface AuthContextType {
@@ -31,7 +33,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await fetch('/api/auth/me');
       if (response.ok) {
         const userData = await response.json();
-        setUser(userData.user);
+        if (userData.success) {
+          setUser(userData.user);
+        } else {
+          setUser(null);
+        }
       } else {
         setUser(null);
       }
@@ -57,7 +63,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (data.success) {
         setUser(data.user);
-        router.push('/');
+        
+        // Role-based routing
+        const user = data.user;
+        switch (user.role) {
+          case 'ROOT_ADMIN':
+            router.push('/root-admin');
+            break;
+          case 'PROJECT_ADMIN':
+            router.push('/project-admin');
+            break;
+          case 'USER':
+            router.push('/user-dashboard');
+            break;
+          default:
+            router.push('/');
+        }
+        
         return { success: true };
       } else {
         return { success: false, message: data.message };

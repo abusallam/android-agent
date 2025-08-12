@@ -1,0 +1,153 @@
+{
+  "analysis": [
+    {
+      "file": "modern-dashboard/src/app/page.tsx",
+      "lines": 51,
+      "size": 1562,
+      "complexity": {
+        "cyclomatic": 3,
+        "functions": 4,
+        "components": 1,
+        "score": 14
+      },
+      "issues": [],
+      "suggestions": []
+    },
+    {
+      "file": "modern-dashboard/src/components/DashboardContent.tsx",
+      "lines": 425,
+      "size": 19290,
+      "complexity": {
+        "cyclomatic": 26,
+        "functions": 10,
+        "components": 1,
+        "score": 49
+      },
+      "issues": [
+        {
+          "type": "warning",
+          "message": "Large file detected - consider breaking into smaller components"
+        }
+      ],
+      "suggestions": []
+    },
+    {
+      "file": "modern-dashboard/src/components/emergency-button.tsx",
+      "lines": 239,
+      "size": 8630,
+      "complexity": {
+        "cyclomatic": 21,
+        "functions": 17,
+        "components": 1,
+        "score": 58
+      },
+      "issues": [],
+      "suggestions": []
+    },
+    {
+      "file": "modern-dashboard/src/components/interactive-map.tsx",
+      "lines": 156,
+      "size": 5238,
+      "complexity": {
+        "cyclomatic": 3,
+        "functions": 11,
+        "components": 1,
+        "score": 28
+      },
+      "issues": [],
+      "suggestions": [
+        "Consider using CSS modules or styled-components for better style management"
+      ]
+    },
+    {
+      "file": "modern-dashboard/src/components/logo.tsx",
+      "lines": 61,
+      "size": 1555,
+      "complexity": {
+        "cyclomatic": 4,
+        "functions": 2,
+        "components": 2,
+        "score": 14
+      },
+      "issues": [],
+      "suggestions": []
+    },
+    {
+      "file": "modern-dashboard/src/app/api/dashboard/route.ts",
+      "lines": 112,
+      "size": 3028,
+      "complexity": {
+        "cyclomatic": 6,
+        "functions": 2,
+        "components": 1,
+        "score": 13
+      },
+      "issues": [
+        {
+          "type": "warning",
+          "message": "TypeScript \"any\" type found - consider using specific types"
+        }
+      ],
+      "suggestions": []
+    },
+    {
+      "file": "modern-dashboard/src/app/api/emergency/call/route.ts",
+      "lines": 62,
+      "size": 1661,
+      "complexity": {
+        "cyclomatic": 2,
+        "functions": 2,
+        "components": 1,
+        "score": 9
+      },
+      "issues": [
+        {
+          "type": "warning",
+          "message": "Console.log statements found - consider removing for production"
+        }
+      ],
+      "suggestions": []
+    }
+  ],
+  "suggestions": [
+    {
+      "category": "Performance",
+      "priority": "high",
+      "suggestion": "Consider implementing code splitting for large components to improve initial load time"
+    },
+    {
+      "category": "Maintainability",
+      "priority": "medium",
+      "suggestion": "Extract common UI patterns into reusable components"
+    },
+    {
+      "category": "Testing",
+      "priority": "high",
+      "suggestion": "Add unit tests for critical components like emergency button and streaming functionality"
+    },
+    {
+      "category": "Security",
+      "priority": "high",
+      "suggestion": "Implement input validation and sanitization for all user inputs"
+    },
+    {
+      "category": "Accessibility",
+      "priority": "medium",
+      "suggestion": "Add ARIA labels and keyboard navigation support for better accessibility"
+    },
+    {
+      "category": "Error Handling",
+      "priority": "high",
+      "suggestion": "Implement comprehensive error boundaries and fallback UI components"
+    }
+  ],
+  "metrics": {
+    "totalFiles": 7,
+    "totalLines": 1106,
+    "totalSize": 40964,
+    "averageComplexity": 26,
+    "totalIssues": 3,
+    "codeQualityScore": 32.142857142857146
+  },
+  "timestamp": "2025-08-07T19:58:32.139Z"
+}

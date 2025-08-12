@@ -1,0 +1,113 @@
+{
+  "expo": {
+    "name": "Android Agent AI - Tactical",
+    "slug": "android-agent-ai-tactical",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f172a"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app needs location access to track device position for monitoring purposes.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs background location access for continuous device monitoring and security.",
+        "NSCameraUsageDescription": "This app needs camera access for video streaming and remote monitoring.",
+        "NSMicrophoneUsageDescription": "This app needs microphone access for audio communication and streaming.",
+        "NSPhotoLibraryUsageDescription": "This app needs photo library access to save and manage captured images.",
+        "NSContactsUsageDescription": "This app needs contacts access for device monitoring and security purposes.",
+        "NSCalendarsUsageDescription": "This app needs calendar access for comprehensive device monitoring.",
+        "NSRemindersUsageDescription": "This app needs reminders access for complete device oversight.",
+        "NSMotionUsageDescription": "This app needs motion sensor access for device activity monitoring.",
+        "UIBackgroundModes": [
+          "location",
+          "background-fetch",
+          "background-processing",
+          "audio"
+        ]
+      }
+    },
+    "android": {
+      "package": "com.androidagent.tactical",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0f172a"
+      },
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE",
+        "CAMERA",
+        "RECORD_AUDIO",
+        "WAKE_LOCK",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "READ_CONTACTS",
+        "WRITE_CONTACTS",
+        "READ_SMS",
+        "SEND_SMS",
+        "READ_PHONE_STATE",
+        "CALL_PHONE",
+        "ACCESS_NETWORK_STATE",
+        "ACCESS_WIFI_STATE",
+        "CHANGE_WIFI_STATE",
+        "BLUETOOTH",
+        "BLUETOOTH_ADMIN",
+        "INTERNET",
+        "SYSTEM_ALERT_WINDOW"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Android Agent to use your location for device tracking and monitoring.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true
+        }
+      ],
+      [
+        "expo-background-fetch",
+        {
+          "backgroundModes": [
+            "background-fetch",
+            "background-processing"
+          ]
+        }
+      ],
+      [
+        "expo-task-manager"
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#3b82f6"
+        }
+      ],
+      "expo-secure-store",
+      "expo-web-browser"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": ""
+      }
+    },
+    "owner": "abusallam"
+  }
+}

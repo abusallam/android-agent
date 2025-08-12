@@ -1,214 +1,187 @@
-/**
- * LiveKit Provider Component
- * Provides LiveKit context and connection management for streaming features
- */
+"use client";
 
-'use client';
-
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { RemoteParticipant, RemoteVideoTrack, RemoteAudioTrack } from 'livekit-client';
-import { LiveKitConnectionManager, type StreamingSession, type ConnectionManagerEvents } from '@/lib/livekit-connection';
-import { detectWebRTCSupport, type StreamingCapabilities } from '@/lib/livekit-config';
+import React, { createContext, useContext, useState, useCallback } from 'react';
+import { Room, RoomEvent, RemoteParticipant, LocalParticipant } from 'livekit-client';
 
 interface LiveKitContextType {
-  connectionManager: LiveKitConnectionManager | null;
-  currentSession: StreamingSession | null;
+  room: Room | null;
   isConnected: boolean;
   isConnecting: boolean;
+  participants: (RemoteParticipant | LocalParticipant)[];
   error: string | null;
-  capabilities: StreamingCapabilities;
-  connect: (deviceId: string, sessionType?: string, isAdmin?: boolean) => Promise<void>;
-  disconnect: () => Promise<void>;
-  publishCamera: () => Promise<void>;
-  publishMicrophone: () => Promise<void>;
-  publishScreen: () => Promise<void>;
-  stopCamera: () => Promise<void>;
-  stopMicrophone: () => Promise<void>;
-  stopScreenShare: () => Promise<void>;
+  connect: (token: string, serverUrl: string, roomName: string) => Promise<void>;
+  disconnect: () => void;
+  startVideoCall: (deviceId: string) => Promise<void>;
+  startAudioCall: (deviceId: string) => Promise<void>;
+  startScreenShare: (deviceId: string) => Promise<void>;
+  startEmergencyCall: (deviceId: string) => Promise<void>;
 }
 
 const LiveKitContext = createContext<LiveKitContextType | null>(null);
 
-export const useLiveKit = () => {
-  const context = useContext(LiveKitContext);
-  if (!context) {
-    throw new Error('useLiveKit must be used within a LiveKitProvider');
-  }
-  return context;
-};
-
-interface LiveKitProviderProps {
-  children: React.ReactNode;
-}
-
-export const LiveKitProvider: React.FC<LiveKitProviderProps> = ({ children }) => {
-  const [connectionManager, setConnectionManager] = useState<LiveKitConnectionManager | null>(null);
-  const [currentSession, setCurrentSession] = useState<StreamingSession | null>(null);
+export function LiveKitProvider({ children }: { children: React.ReactNode }) {
+  const [room, setRoom] = useState<Room | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [participants, setParticipants] = useState<(RemoteParticipant | LocalParticipant)[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [capabilities] = useState<StreamingCapabilities>(detectWebRTCSupport());
 
-  // Initialize connection manager
-  useEffect(() => {
-    const eventHandlers: ConnectionManagerEvents = {
-      onConnected: () => {
-        setIsConnected(true);
-        setIsConnecting(false);
-        setError(null);
-        console.log('LiveKit connected successfully');
-      },
-      onDisconnected: () => {
-        setIsConnected(false);
-        setIsConnecting(false);
-        setCurrentSession(null);
-        console.log('LiveKit disconnected');
-      },
-      onParticipantConnected: (participant: RemoteParticipant) => {
-        console.log('Participant joined:', participant.identity);
-      },
-      onParticipantDisconnected: (participant: RemoteParticipant) => {
-        console.log('Participant left:', participant.identity);
-      },
-      onTrackSubscribed: (track: RemoteVideoTrack | RemoteAudioTrack, participant: RemoteParticipant) => {
-        console.log('Track subscribed:', track.kind, 'from', participant.identity);
-      },
-      onTrackUnsubscribed: (track: RemoteVideoTrack | RemoteAudioTrack, participant: RemoteParticipant) => {
-        console.log('Track unsubscribed:', track.kind, 'from', participant.identity);
-      },
-      onError: (error: Error) => {
-        setError(error.message);
-        setIsConnecting(false);
-        console.error('LiveKit error:', error);
-      },
-      onConnectionQualityChanged: (quality: number) => {
-        console.log('Connection quality:', quality);
-      },
-    };
-
-    const manager = new LiveKitConnectionManager(eventHandlers);
-    setConnectionManager(manager);
-
-    return () => {
-      manager.disconnect();
-    };
-  }, []);
-
-  // Update current session when connection manager changes
-  useEffect(() => {
-    if (connectionManager) {
-      const session = connectionManager.getCurrentSession();
-      setCurrentSession(session);
-    }
-  }, [connectionManager, isConnected]);
-
-  const connect = useCallback(async (deviceId: string, sessionType: string = 'monitoring', isAdmin: boolean = false) => {
-    if (!connectionManager) {
-      throw new Error('Connection manager not initialized');
-    }
+  const connect = useCallback(async (token: string, serverUrl: string, roomName: string) => {
+    if (isConnecting || isConnected) return;
 
     setIsConnecting(true);
     setError(null);
 
     try {
-      // Generate room name
-      const roomName = `android-agent-${sessionType}-${deviceId}-${Date.now()}`;
-
-      // Get access token from API
-      const response = await fetch('/api/livekit/token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          deviceId,
-          roomName,
-          isAdmin,
-          sessionType,
-        }),
+      const newRoom = new Room();
+      
+      // Set up event listeners
+      newRoom.on(RoomEvent.Connected, () => {
+        console.log('Connected to LiveKit room');
+        setIsConnected(true);
+        setIsConnecting(false);
+        updateParticipants(newRoom);
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to get access token');
-      }
+      newRoom.on(RoomEvent.Disconnected, () => {
+        console.log('Disconnected from LiveKit room');
+        setIsConnected(false);
+        setParticipants([]);
+      });
 
-      const { token } = await response.json();
+      newRoom.on(RoomEvent.ParticipantConnected, () => {
+        updateParticipants(newRoom);
+      });
 
-      // Connect to LiveKit room
-      await connectionManager.connect(token, roomName, deviceId, isAdmin);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Connection failed';
-      setError(errorMessage);
+      newRoom.on(RoomEvent.ParticipantDisconnected, () => {
+        updateParticipants(newRoom);
+      });
+
+      // Connect to room
+      await newRoom.connect(serverUrl, token);
+      setRoom(newRoom);
+
+    } catch (err) {
+      console.error('Failed to connect to LiveKit room:', err);
+      setError(err instanceof Error ? err.message : 'Failed to connect');
       setIsConnecting(false);
-      throw error;
     }
-  }, [connectionManager]);
+  }, [isConnecting, isConnected]);
 
-  const disconnect = useCallback(async () => {
-    if (connectionManager) {
-      await connectionManager.disconnect();
+  const disconnect = useCallback(() => {
+    if (room) {
+      room.disconnect();
+      setRoom(null);
+      setIsConnected(false);
+      setParticipants([]);
     }
-  }, [connectionManager]);
+  }, [room]);
 
-  const publishCamera = useCallback(async () => {
-    if (!connectionManager) {
-      throw new Error('Not connected');
+  const updateParticipants = (room: Room) => {
+    const allParticipants = [room.localParticipant, ...Array.from(room.remoteParticipants.values())];
+    setParticipants(allParticipants);
+  };
+
+  const generateToken = async (deviceId: string, sessionType: string) => {
+    const response = await fetch('/api/livekit/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        deviceId,
+        roomName: `${sessionType}-${deviceId}-${Date.now()}`,
+        isAdmin: true,
+        sessionType
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to generate LiveKit token');
     }
-    await connectionManager.publishCamera();
-  }, [connectionManager]);
 
-  const publishMicrophone = useCallback(async () => {
-    if (!connectionManager) {
-      throw new Error('Not connected');
+    return response.json();
+  };
+
+  const startVideoCall = useCallback(async (deviceId: string) => {
+    try {
+      const tokenData = await generateToken(deviceId, 'video');
+      await connect(tokenData.token, tokenData.serverUrl, tokenData.roomName);
+      
+      // Enable camera and microphone
+      if (room) {
+        await room.localParticipant.enableCameraAndMicrophone();
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to start video call');
     }
-    await connectionManager.publishMicrophone();
-  }, [connectionManager]);
+  }, [connect, room]);
 
-  const publishScreen = useCallback(async () => {
-    if (!connectionManager) {
-      throw new Error('Not connected');
+  const startAudioCall = useCallback(async (deviceId: string) => {
+    try {
+      const tokenData = await generateToken(deviceId, 'audio');
+      await connect(tokenData.token, tokenData.serverUrl, tokenData.roomName);
+      
+      // Enable microphone only
+      if (room) {
+        await room.localParticipant.setMicrophoneEnabled(true);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to start audio call');
     }
-    await connectionManager.publishScreen();
-  }, [connectionManager]);
+  }, [connect, room]);
 
-  const stopCamera = useCallback(async () => {
-    if (connectionManager) {
-      await connectionManager.stopCamera();
+  const startScreenShare = useCallback(async (deviceId: string) => {
+    try {
+      const tokenData = await generateToken(deviceId, 'screen');
+      await connect(tokenData.token, tokenData.serverUrl, tokenData.roomName);
+      
+      // Enable screen share
+      if (room) {
+        await room.localParticipant.setScreenShareEnabled(true);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to start screen share');
     }
-  }, [connectionManager]);
+  }, [connect, room]);
 
-  const stopMicrophone = useCallback(async () => {
-    if (connectionManager) {
-      await connectionManager.stopMicrophone();
+  const startEmergencyCall = useCallback(async (deviceId: string) => {
+    try {
+      const tokenData = await generateToken(deviceId, 'emergency');
+      await connect(tokenData.token, tokenData.serverUrl, tokenData.roomName);
+      
+      // Enable camera and microphone for emergency
+      if (room) {
+        await room.localParticipant.enableCameraAndMicrophone();
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to start emergency call');
     }
-  }, [connectionManager]);
+  }, [connect, room]);
 
-  const stopScreenShare = useCallback(async () => {
-    if (connectionManager) {
-      await connectionManager.stopScreenShare();
-    }
-  }, [connectionManager]);
-
-  const contextValue: LiveKitContextType = {
-    connectionManager,
-    currentSession,
+  const value: LiveKitContextType = {
+    room,
     isConnected,
     isConnecting,
+    participants,
     error,
-    capabilities,
     connect,
     disconnect,
-    publishCamera,
-    publishMicrophone,
-    publishScreen,
-    stopCamera,
-    stopMicrophone,
-    stopScreenShare,
+    startVideoCall,
+    startAudioCall,
+    startScreenShare,
+    startEmergencyCall
   };
 
   return (
-    <LiveKitContext.Provider value={contextValue}>
+    <LiveKitContext.Provider value={value}>
       {children}
     </LiveKitContext.Provider>
   );
-};
+}
+
+export function useLiveKit() {
+  const context = useContext(LiveKitContext);
+  if (!context) {
+    throw new Error('useLiveKit must be used within a LiveKitProvider');
+  }
+  return context;
+}

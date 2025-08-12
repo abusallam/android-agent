@@ -16,7 +16,7 @@ type ThemeProviderState = {
 };
 
 const initialState: ThemeProviderState = {
-  theme: "system",
+  theme: "dark",
   setTheme: () => null,
 };
 
@@ -33,9 +33,16 @@ export function ThemeProvider({
 
   React.useEffect(() => {
     setMounted(true);
-    const storedTheme = localStorage.getItem(storageKey) as Theme;
-    if (storedTheme) {
-      setTheme(storedTheme);
+    
+    // Only access localStorage after mounting to prevent hydration mismatch
+    try {
+      const storedTheme = localStorage.getItem(storageKey) as Theme;
+      if (storedTheme && (storedTheme === "dark" || storedTheme === "light" || storedTheme === "system")) {
+        setTheme(storedTheme);
+      }
+    } catch (error) {
+      // Fallback to default theme if localStorage is not available
+      console.warn("localStorage not available, using default theme");
     }
   }, [storageKey]);
 
@@ -61,22 +68,18 @@ export function ThemeProvider({
   const value = {
     theme,
     setTheme: (theme: Theme) => {
-      if (mounted) {
-        localStorage.setItem(storageKey, theme);
-      }
       setTheme(theme);
+      if (mounted) {
+        try {
+          localStorage.setItem(storageKey, theme);
+        } catch (error) {
+          console.warn("Failed to save theme to localStorage");
+        }
+      }
     },
   };
 
-  // Prevent hydration mismatch by not rendering until mounted
-  if (!mounted) {
-    return (
-      <ThemeProviderContext.Provider {...props} value={value}>
-        <div className="dark">{children}</div>
-      </ThemeProviderContext.Provider>
-    );
-  }
-
+  // Always render the same structure to prevent hydration mismatch
   return (
     <ThemeProviderContext.Provider {...props} value={value}>
       {children}

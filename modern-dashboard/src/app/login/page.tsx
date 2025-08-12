@@ -7,8 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield, Loader2, Eye, EyeOff } from 'lucide-react';
-import Image from 'next/image';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
+import { Logo } from '@/components/logo';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -24,11 +24,11 @@ export default function LoginPage() {
     setIsLoading(true);
 
     const result = await login(username, password);
-    
+
     if (!result.success) {
       setError(result.message || 'Login failed');
     }
-    
+
     setIsLoading(false);
   };
 
@@ -44,9 +44,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md bg-white/5 backdrop-blur-xl border-white/10 shadow-2xl">
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 p-3 shadow-lg">
-              <Shield className="h-10 w-10 text-white" />
-            </div>
+            <Logo size="lg" />
           </div>
           <div>
             <CardTitle className="text-2xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
@@ -138,11 +136,43 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Demo credentials info */}
-          <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
-            <p className="text-xs text-blue-300 font-medium mb-1">Demo Credentials:</p>
-            <p className="text-xs text-blue-300/80">Username: admin</p>
-            <p className="text-xs text-blue-300/80">Password: admin123</p>
+          {/* Authentication options */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between text-sm">
+              <button
+                type="button"
+                className="text-blue-400 hover:text-blue-300 transition-colors"
+                onClick={() => {/* TODO: Implement forgot password */ }}
+              >
+                Forgot Password?
+              </button>
+              <button
+                type="button"
+                className="text-blue-400 hover:text-blue-300 transition-colors"
+                onClick={() => {/* TODO: Implement sign up */ }}
+              >
+                Sign Up
+              </button>
+            </div>
+
+            {/* Demo credentials info */}
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+              <p className="text-xs text-blue-300 font-medium mb-2">Demo Credentials:</p>
+              <div className="space-y-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-blue-300/80">ROOT_ADMIN:</span>
+                  <span className="text-xs text-blue-300 font-mono">root / root123</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-blue-300/80">PROJECT_ADMIN:</span>
+                  <span className="text-xs text-blue-300 font-mono">admin1 / admin123</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-blue-300/80">USER:</span>
+                  <span className="text-xs text-blue-300 font-mono">user1 / user123</span>
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

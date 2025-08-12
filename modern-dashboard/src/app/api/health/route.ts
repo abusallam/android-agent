@@ -3,6 +3,11 @@ import { checkDatabaseHealth, getDatabaseConfig } from '@/lib/db-config';
 
 export async function GET() {
   try {
+    // Ensure DATABASE_URL is available
+    if (!process.env.DATABASE_URL) {
+      throw new Error('DATABASE_URL environment variable is not set');
+    }
+
     // Check database health
     const dbHealth = await checkDatabaseHealth();
     const dbConfig = getDatabaseConfig();

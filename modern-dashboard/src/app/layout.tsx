@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/theme-provider";
+import { LiveKitProvider } from "@/components/streaming/LiveKitProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -10,9 +11,16 @@ export const metadata: Metadata = {
   title: "Android Agent AI - Enterprise Security Platform",
   description: "Modern Android device management and monitoring platform with AI-powered intelligence",
   icons: {
-    icon: "/logo.png",
-    shortcut: "/logo.png",
-    apple: "/logo.png",
+    icon: [
+      { url: "/logo-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/logo-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/logo-48.png", sizes: "48x48", type: "image/png" },
+    ],
+    shortcut: "/logo-32.png",
+    apple: [
+      { url: "/logo-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/logo-512.png", sizes: "512x512", type: "image/png" },
+    ],
   },
 };
 
@@ -22,24 +30,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                document.documentElement.classList.add('dark');
-                document.body.style.backgroundColor = 'hsl(222.2 84% 4.9%)';
-                document.body.style.color = 'hsl(210 40% 98%)';
-              })();
-            `,
-          }}
-        />
-      </head>
-      <body className={`${inter.className} antialiased dark bg-slate-950 text-white`}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.className} antialiased`}>
         <ThemeProvider defaultTheme="dark" storageKey="android-agent-theme">
           <AuthProvider>
-            {children}
+            <LiveKitProvider>
+              {children}
+            </LiveKitProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

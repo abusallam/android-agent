@@ -1,0 +1,52 @@
+{
+  "mcpServers": {
+    "tacticalops-testing": {
+      "command": "node",
+      "args": ["./mcp-server/tacticalops-mcp-server.js"],
+      "env": {
+        "TACTICALOPS_API_URL": "http://localhost:3000/api/v2",
+        "TACTICALOPS_AGENT_API_KEY": "tactical-ops-agent-key-2024",
+        "LOG_LEVEL": "INFO"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "test_system_health",
+        "test_agent_authentication",
+        "test_nlp_processing",
+        "test_emergency_response",
+        "test_tactical_operations"
+      ]
+    },
+    "openrouter-ai": {
+      "command": "uvx",
+      "args": ["mcp-server-openrouter@latest"],
+      "env": {
+        "OPENROUTER_API_KEY": "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",
+        "OPENROUTER_MODEL": "qwen/qwen-2.5-coder-32b-instruct",
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "generate_response",
+        "analyze_query",
+        "process_command"
+      ]
+    },
+    "system-monitoring": {
+      "command": "node",
+      "args": ["./mcp-server/system-monitor-mcp.js"],
+      "env": {
+        "TACTICALOPS_API_URL": "http://localhost:3000/api/v2",
+        "MONITOR_INTERVAL": "30000",
+        "LOG_LEVEL": "INFO"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "get_system_status",
+        "check_health",
+        "get_metrics",
+        "monitor_performance"
+      ]
+    }
+  }
+}
