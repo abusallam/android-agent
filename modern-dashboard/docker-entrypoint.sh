@@ -65,8 +65,11 @@ setup_database() {
 create_directories() {
     log "Creating necessary directories..."
     
-    mkdir -p /app/logs /app/uploads /app/tmp
-    chmod 755 /app/logs /app/uploads /app/tmp
+    # Create directories if they don't exist
+    mkdir -p /app/logs /app/uploads /app/tmp 2>/dev/null || true
+    
+    # Try to set permissions, but don't fail if it doesn't work
+    chmod 755 /app/logs /app/uploads /app/tmp 2>/dev/null || log "Warning: Could not change permissions (continuing anyway)"
     
     success "Directories created"
 }
