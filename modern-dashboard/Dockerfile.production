@@ -111,9 +111,9 @@ COPY --from=builder --chown=tacticalops:tacticalops /app/node_modules/.prisma ./
 RUN mkdir -p /app/logs /app/uploads /app/tmp && \
     chown -R tacticalops:tacticalops /app/logs /app/uploads /app/tmp
 
-# Copy startup scripts
-COPY --chown=tacticalops:tacticalops scripts/docker-entrypoint.sh /docker-entrypoint.sh
-COPY --chown=tacticalops:tacticalops scripts/healthcheck.sh /healthcheck.sh
+# Copy startup scripts (will be copied to build context by deployment script)
+COPY --chown=tacticalops:tacticalops docker-entrypoint.sh /docker-entrypoint.sh
+COPY --chown=tacticalops:tacticalops healthcheck.sh /healthcheck.sh
 
 # Make scripts executable
 RUN chmod +x /docker-entrypoint.sh /healthcheck.sh

@@ -2,6 +2,7 @@ import type { NextConfig } from 'next';
 import withPWA from 'next-pwa';
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   eslint: {
     // Disable ESLint during builds for now to focus on functionality testing
     ignoreDuringBuilds: true,

@@ -1,0 +1,75 @@
+{
+  "ports": {
+    "3000": "OPEN",
+    "5432": "CLOSED",
+    "6379": "OPEN",
+    "9000": "CLOSED"
+  },
+  "services": {
+    "Main Application": {
+      "status": "200",
+      "contentType": "text/html; charset=utf-8",
+      "responseTime": 1.52358,
+      "accessible": true
+    },
+    "Login Page": {
+      "status": "404",
+      "contentType": "text/html; charset=utf-8",
+      "responseTime": 0.858547,
+      "accessible": false
+    },
+    "Health API": {
+      "status": "404",
+      "contentType": "text/html; charset=utf-8",
+      "responseTime": 1.261375,
+      "accessible": false
+    },
+    "Tactical Dashboard": {
+      "status": "404",
+      "contentType": "text/html; charset=utf-8",
+      "responseTime": 0.906708,
+      "accessible": false
+    },
+    "Admin Panel": {
+      "status": "404",
+      "contentType": "text/html; charset=utf-8",
+      "responseTime": 0.92129,
+      "accessible": false
+    },
+    "/api/health": {
+      "status": "404"
+    },
+    "/api/auth/login": {
+      "status": "404"
+    },
+    "/api/dashboard": {
+      "status": "404"
+    },
+    "/api/tactical/map-data": {
+      "status": "404"
+    },
+    "/api/agentic/system-control": {
+      "status": "404"
+    },
+    "/api/agents/task-management": {
+      "status": "404"
+    }
+  },
+  "applications": {
+    "detected": "consulting.sa",
+    "tacticalops-app": "likely_running",
+    "tacticalops-postgres": "not_running",
+    "tacticalops-redis": "likely_running",
+    "tacticalops-minio": "not_running"
+  },
+  "issues": [
+    "TacticalOps application not found - consulting.sa is running instead",
+    "PostgreSQL Database not accessible on port 5432",
+    "MinIO Storage not accessible on port 9000"
+  ],
+  "recommendations": [
+    "Deploy TacticalOps application",
+    "Start PostgreSQL container",
+    "Start MinIO container"
+  ]
+}

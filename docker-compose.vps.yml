@@ -1,0 +1,146 @@
+version: '3.8'
+
+services:
+  # TacticalOps Main Application - using port 3010 to avoid conflicts
+  tacticalops-app:
+    build:
+      context: ./modern-dashboard
+      dockerfile: Dockerfile.production
+      args:
+        - NODE_ENV=production
+        - BUILD_VERSION=2.0.0
+    image: tacticalops/platform:latest
+    container_name: tacticalops-app
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=postgresql://tacticalops:${DB_PASSWORD}@tacticalops-postgres:5432/tacticalops
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@tacticalops-redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - API_VERSION=v2
+      - DEPLOYMENT_TIER=civilian
+      - FEATURES_ENABLED=basic,mapping,emergency,communication,agentic,nlp
+      - AGENT_API_KEY=${AGENT_API_KEY}
+      - RATE_LIMIT_REQUESTS=1000
+      - RATE_LIMIT_WINDOW=3600
+      - LOG_LEVEL=info
+      # Using local PostgreSQL instead of Supabase for better security and performance
+      # AI/LLM Configuration (optional - can be disabled)
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - OPENROUTER_MODEL=qwen/qwen3-coder:free
+      - AGENT_LLM_PROVIDER=openrouter
+      - AGENT_LLM_MODEL=qwen/qwen3-coder:free
+      # Contact information
+      - NEXT_PUBLIC_CONTACT_EMAIL=info@consulting.sa
+    volumes:
+      - /opt/tacticalops/data/uploads:/app/uploads
+      - /opt/tacticalops/logs/app:/app/logs
+    ports:
+      - "127.0.0.1:3010:3000"  # Use port 3010 to avoid conflicts with existing services
+    depends_on:
+      - tacticalops-postgres
+      - tacticalops-redis
+    restart: unless-stopped
+    networks:
+      - tacticalops-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/v2/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # PostgreSQL Database - using port 5433 to avoid conflicts
+  tacticalops-postgres:
+    image: postgres:15-alpine
+    container_name: tacticalops-postgres
+    environment:
+      - POSTGRES_DB=tacticalops
+      - POSTGRES_USER=tacticalops
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - /opt/tacticalops/data/postgres:/var/lib/postgresql/data
+      - /opt/tacticalops/backups:/backups
+    ports:
+      - "127.0.0.1:5433:5432"  # Use port 5433 to avoid conflicts
+    restart: unless-stopped
+    networks:
+      - tacticalops-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tacticalops -d tacticalops"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Redis Cache - using port 6380 to avoid conflicts
+  tacticalops-redis:
+    image: redis:7-alpine
+    container_name: tacticalops-redis
+    command: >
+      redis-server 
+      --appendonly yes 
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - /opt/tacticalops/data/redis:/data
+    ports:
+      - "127.0.0.1:6381:6379"  # Use port 6381 to avoid conflicts
+    restart: unless-stopped
+    networks:
+      - tacticalops-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Prometheus Monitoring - using port 9091 to avoid conflicts
+  tacticalops-prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: tacticalops-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - /opt/tacticalops/data/prometheus:/prometheus
+    ports:
+      - "127.0.0.1:9091:9090"  # Use port 9091 to avoid conflicts
+    restart: unless-stopped
+    networks:
+      - tacticalops-network
+    depends_on:
+      - tacticalops-app
+
+  # Grafana Dashboard - using port 3011 to avoid conflicts
+  tacticalops-grafana:
+    image: grafana/grafana:10.0.0
+    container_name: tacticalops-grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=https://ta.consulting.sa/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    volumes:
+      - /opt/tacticalops/data/grafana:/var/lib/grafana
+    ports:
+      - "127.0.0.1:3011:3000"  # Use port 3011 to avoid conflicts
+    restart: unless-stopped
+    networks:
+      - tacticalops-network
+    depends_on:
+      - tacticalops-prometheus
+
+# Networks
+networks:
+  tacticalops-network:
+    driver: bridge
+    name: tacticalops-network

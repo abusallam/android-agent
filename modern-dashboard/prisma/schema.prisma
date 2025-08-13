@@ -1,10 +1,10 @@
-// Android Agent Database Schema - SQLite Version
+// Android Agent Database Schema - PostgreSQL Version
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -14,39 +14,13 @@ model User {
   username  String   @unique
   password  String   // bcrypt hashed
   email     String?  @unique
-  role      UserRole @default(USER)
-  isActive  Boolean  @default(true)
-  lastLogin DateTime?
-  createdBy String?  // ID of admin who created this user
-  
-  // Role-based project assignments
-  projectId       String? // For PROJECT_ADMIN and USER roles
-  assignedAdminId String? // For USER role - which PROJECT_ADMIN manages them
-  
+  role      UserRole @default(ADMIN)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
   // Relations
   sessions  Session[]
   logs      Log[]
-  createdUsers User[] @relation("UserCreatedBy")
-  creator   User?    @relation("UserCreatedBy", fields: [createdBy], references: [id])
-  streamingSessions StreamingSession[]
-  
-  // Role-based relations
-  managedProject    Project? @relation("ProjectAdmin", fields: [projectId], references: [id])
-  assignedAdmin     User?    @relation("AdminUserAssignment", fields: [assignedAdminId], references: [id])
-  assignedUsers     User[]   @relation("AdminUserAssignment")
-  userAssignments   UserAssignment[] @relation("AssignedUser")
-  adminAssignments  UserAssignment[] @relation("ProjectAdminAssignments")
-  
-  // ATAK-inspired relations
-  mapLayers      MapLayer[]
-  mapAnnotations MapAnnotation[]
-  geofences      Geofence[]
-  chatMessages   ChatMessage[]
-  channelMembers ChannelMember[]
-  mediaFiles     MediaFile[]
   
   @@map("users")
 }
@@ -75,7 +49,7 @@ model Device {
   lastSeen    DateTime    @default(now())
   firstSeen   DateTime    @default(now())
   ipAddress   String?
-  location    String?     // JSON string for SQLite compatibility
+  location    Json?       // Current location data
   
   // Relations
   callLogs         CallLog[]
@@ -89,13 +63,6 @@ model Device {
   wifiLogs         WifiLog[]
   files            FileRecord[]
   downloads        Download[]
-  sensorData       SensorData[]
-  backgroundTasks  BackgroundTask[]
-  streamingSessions StreamingSession[]
-  pushNotifications PushNotification[]
-  geofenceTriggers GeofenceTrigger[]
-  tracks           Track[]
-  emergencyEvents  EmergencyEvent[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -198,6 +165,7 @@ model GpsLog {
   device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
   
   @@map("gps_logs")
+  @@index([deviceId, timestamp])
 }
 
 // Activity Logs
@@ -282,7 +250,7 @@ model Log {
   level   LogLevel
   message String
   userId  String?
-  metadata String? // JSON string for SQLite compatibility
+  metadata Json?
   
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
   
@@ -291,111 +259,9 @@ model Log {
   @@map("logs")
 }
 
-// Sensor Data
-model SensorData {
-  id           String   @id @default(cuid())
-  deviceId     String
-  sensorType   String   // accelerometer, gyroscope, magnetometer, etc.
-  data         String   // JSON string with sensor readings
-  timestamp    DateTime @default(now())
-  
-  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
-  
-  @@map("sensor_data")
-}
-
-// Background Tasks
-model BackgroundTask {
-  id           String   @id @default(cuid())
-  deviceId     String
-  taskType     String
-  status       String   @default("pending")
-  scheduledAt  DateTime
-  executedAt   DateTime?
-  result       String?
-  errorMessage String?
-  createdAt    DateTime @default(now())
-  
-  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
-  
-  @@map("background_tasks")
-}
-
-// Streaming Sessions
-model StreamingSession {
-  id              String   @id @default(cuid())
-  deviceId        String
-  adminUserId     String
-  sessionType     String   // video, audio, screen
-  livekitRoomId   String
-  startedAt       DateTime @default(now())
-  endedAt         DateTime?
-  durationSeconds Int?
-  qualityMetrics  String?  // JSON
-  
-  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
-  admin  User   @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
-  
-  @@map("streaming_sessions")
-}
-
-// Push Notifications
-model PushNotification {
-  id          String   @id @default(cuid())
-  deviceId    String
-  title       String
-  body        String
-  data        String?  // JSON payload
-  sentAt      DateTime @default(now())
-  deliveredAt DateTime?
-  openedAt    DateTime?
-  status      String   @default("sent")
-  
-  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
-  
-  @@map("push_notifications")
-}
-
-// Role-Based Access Control Models
-
-// Projects managed by PROJECT_ADMIN users
-model Project {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  adminId     String   // PROJECT_ADMIN who manages this project
-  userCount   Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  // Relations
-  admin User[] @relation("ProjectAdmin")
-  
-  @@map("projects")
-}
-
-// User assignments to PROJECT_ADMIN
-model UserAssignment {
-  id              String   @id @default(cuid())
-  projectAdminId  String
-  userId          String
-  assignedAt      DateTime @default(now())
-  permissions     String?  // JSON permissions object
-  isActive        Boolean  @default(true)
-  
-  // Relations
-  projectAdmin User @relation("ProjectAdminAssignments", fields: [projectAdminId], references: [id], onDelete: Cascade)
-  user         User @relation("AssignedUser", fields: [userId], references: [id], onDelete: Cascade)
-  
-  @@unique([userId]) // Each user can only be assigned to one admin
-  @@map("user_assignments")
-}
-
 // Enums
 enum UserRole {
-  ROOT_ADMIN
-  PROJECT_ADMIN
+  ADMIN
   USER
 }
 
@@ -424,175 +290,3 @@ enum LogLevel {
   INFO
   DEBUG
 }
-
-// ATAK-Inspired Tactical Features
-
-// Map Layers
-model MapLayer {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  type        String   // geojson, kml, raster, vector
-  layerData   String   // JSON data
-  isVisible   Boolean  @default(true)
-  isPublic    Boolean  @default(false)
-  createdBy   String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  user        User           @relation(fields: [createdBy], references: [id], onDelete: Cascade)
-  annotations MapAnnotation[]
-  
-  @@map("map_layers")
-}
-
-// Map Annotations
-model MapAnnotation {
-  id          String   @id @default(cuid())
-  type        String   // marker, polygon, polyline, circle, rectangle
-  coordinates String   // JSON coordinates
-  properties  String   // JSON properties (style, icon, label, etc.)
-  layerId     String
-  createdBy   String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  layer MapLayer @relation(fields: [layerId], references: [id], onDelete: Cascade)
-  user  User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
-  
-  @@map("map_annotations")
-}
-
-// Geofences
-model Geofence {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  geometry    String   // JSON GeoJSON geometry
-  triggerType String   // enter, exit, dwell
-  alertLevel  String   // info, warning, critical
-  isActive    Boolean  @default(true)
-  createdBy   String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  user     User              @relation(fields: [createdBy], references: [id], onDelete: Cascade)
-  triggers GeofenceTrigger[]
-  
-  @@map("geofences")
-}
-
-// Geofence Triggers
-model GeofenceTrigger {
-  id          String   @id @default(cuid())
-  geofenceId  String
-  deviceId    String
-  triggerType String   // entered, exited, dwelling
-  location    String   // JSON location data
-  triggeredAt DateTime @default(now())
-  
-  geofence Geofence @relation(fields: [geofenceId], references: [id], onDelete: Cascade)
-  device   Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
-  
-  @@map("geofence_triggers")
-}
-
-// Tracks and Routes
-model Track {
-  id            String   @id @default(cuid())
-  deviceId      String
-  name          String?
-  trackData     String   // JSON GeoJSON LineString
-  startTime     DateTime
-  endTime       DateTime?
-  totalDistance Float?
-  metadata      String?  // JSON metadata
-  createdAt     DateTime @default(now())
-  
-  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
-  
-  @@map("tracks")
-}
-
-// Emergency Events
-model EmergencyEvent {
-  id         String   @id @default(cuid())
-  deviceId   String
-  eventType  String   // panic, medical, fire, etc.
-  location   String   // JSON location data
-  status     String   @default("active") // active, acknowledged, resolved
-  metadata   String?  // JSON additional data
-  createdAt  DateTime @default(now())
-  resolvedAt DateTime?
-  
-  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
-  
-  @@map("emergency_events")
-}
-
-// Chat Messages
-model ChatMessage {
-  id          String   @id @default(cuid())
-  content     String
-  messageType String   // text, image, video, file, location
-  mediaUrl    String?
-  latitude    Float?
-  longitude   Float?
-  senderId    String
-  channelId   String
-  createdAt   DateTime @default(now())
-  
-  sender  User        @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  channel ChatChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  
-  @@map("chat_messages")
-}
-
-// Chat Channels
-model ChatChannel {
-  id          String   @id @default(cuid())
-  name        String
-  type        String   // team, operation, emergency
-  isEncrypted Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  
-  messages ChatMessage[]
-  members  ChannelMember[]
-  mediaFiles MediaFile[]
-  
-  @@map("chat_channels")
-}
-
-// Channel Members
-model ChannelMember {
-  id        String   @id @default(cuid())
-  channelId String
-  userId    String
-  role      String   @default("member") // admin, moderator, member
-  joinedAt  DateTime @default(now())
-  
-  channel ChatChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  @@unique([channelId, userId])
-  @@map("channel_members")
-}
-
-// Media Files
-model MediaFile {
-  id           String   @id @default(cuid())
-  filename     String
-  originalName String
-  mimeType     String
-  size         Int
-  url          String
-  uploadedBy   String
-  channelId    String?
-  createdAt    DateTime @default(now())
-  
-  uploader User         @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
-  channel  ChatChannel? @relation(fields: [channelId], references: [id], onDelete: SetNull)
-  
-  @@map("media_files")
-}
-

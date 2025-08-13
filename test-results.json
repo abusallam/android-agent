@@ -1,115 +1,82 @@
 {
-  "tests": [
-    {
-      "name": "Login Test",
-      "status": "PASS",
-      "details": "Final URL: http://localhost:3003/, Has dashboard content: true"
+  "config": {
+    "configFile": "/home/asim/Documents/android-agent/playwright.config.js",
+    "rootDir": "/home/asim/Documents/android-agent/playwright-tests",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
     },
-    {
-      "name": "Dashboard Elements Test",
-      "status": "ERROR",
-      "error": "locator.isVisible: Error: strict mode violation: locator('text=EMERGENCY') resolved to 5 elements:\n    1) <div class=\"tracking-tight flex items-center gap-4 text-white text-2xl font-bold\">…</div> aka getByText('Emergency AssistanceReady')\n    2) <div class=\"text-red-200/80 text-lg mt-3\">Press the emergency button if you need immediate …</div> aka getByText('Press the emergency button if')\n    3) <button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-primary/90 py-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white border-0 h-20 px-12 text-xl font-bold shadow-lg transform hover:scale-105 transition-all duration-200\">…</button> aka getByRole('button', { name: 'EMERGENCY' }).first()\n    4) <button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-primary/90 px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white border-0 h-16 text-lg font-bold shadow-lg transform hover:scale-105 transition-all duration-200\">…</button> aka getByRole('button', { name: 'EMERGENCY' }).nth(1)\n    5) <a target=\"_blank\" href=\"/api/emergency/alert\" class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border bg-background shadow-sm hover:text-accent-foreground h-9 px-4 py-2 border-red-500/30 text-red-300 hover:bg-red-500/10\">…</a> aka getByRole('link', { name: 'Emergency' })\n\nCall log:\n\u001b[2m    - checking visibility of locator('text=EMERGENCY')\u001b[22m\n"
-    },
-    {
-      "name": "Streaming Buttons Test",
-      "status": "PASS",
-      "details": "Buttons found: {\"video\":true,\"audio\":true,\"emergency\":true}"
-    },
-    {
-      "name": "API Test: /api/health",
-      "status": "PASS",
-      "details": "HTTP 200"
-    },
-    {
-      "name": "API Test: /api/dashboard",
-      "status": "PASS",
-      "details": "HTTP 200"
-    },
-    {
-      "name": "API Test: /api/livekit/token",
-      "status": "PASS",
-      "details": "HTTP 200"
-    },
-    {
-      "name": "Responsive Test: Desktop",
-      "status": "PASS",
-      "details": "1920x1080"
-    },
-    {
-      "name": "Responsive Test: Tablet",
-      "status": "PASS",
-      "details": "768x1024"
-    },
-    {
-      "name": "Responsive Test: Mobile",
-      "status": "PASS",
-      "details": "375x667"
-    }
-  ],
-  "screenshots": [
-    "screenshots/01-login-page.png",
-    "screenshots/02-login-filled.png",
-    "screenshots/03-after-login.png",
-    "screenshots/03-dashboard-loaded.png",
-    "screenshots/05-video-call-clicked.png",
-    "screenshots/06-audio-call-clicked.png",
-    "screenshots/07-emergency-clicked.png",
-    "screenshots/08-responsive-desktop.png",
-    "screenshots/08-responsive-tablet.png",
-    "screenshots/08-responsive-mobile.png"
-  ],
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/home/asim/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/home/asim/Documents/android-agent/playwright-tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.54.2",
+    "workers": 2,
+    "webServer": null
+  },
+  "suites": [],
   "errors": [
     {
-      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
-      "timestamp": "2025-08-07T21:20:38.457Z"
+      "message": "Error: Playwright Test did not expect test.describe() to be called here.\nMost common reasons include:\n- You are calling test.describe() in a configuration file.\n- You are calling test.describe() in a file that is imported by the configuration file.\n- You have two different versions of @playwright/test. This usually happens\n  when one of the dependencies in your package.json depends on @playwright/test.",
+      "stack": "Error: Playwright Test did not expect test.describe() to be called here.\nMost common reasons include:\n- You are calling test.describe() in a configuration file.\n- You are calling test.describe() in a file that is imported by the configuration file.\n- You have two different versions of @playwright/test. This usually happens\n  when one of the dependencies in your package.json depends on @playwright/test.\n    at TestTypeImpl._currentSuite (/home/asim/node_modules/@playwright/test/node_modules/playwright/lib/common/testType.js:74:13)\n    at TestTypeImpl._describe (/home/asim/node_modules/@playwright/test/node_modules/playwright/lib/common/testType.js:106:24)\n    at Function.describe (/home/asim/node_modules/@playwright/test/node_modules/playwright/lib/transform/transform.js:289:12)\n    at Object.<anonymous> (/home/asim/Documents/android-agent/playwright-tests/tacticalops.spec.js:7:6)",
+      "location": {
+        "file": "/home/asim/Documents/android-agent/playwright-tests/tacticalops.spec.js",
+        "column": 6,
+        "line": 7
+      },
+      "snippet": "\u001b[90m   at \u001b[39mtacticalops.spec.js:7\n\n\u001b[0m \u001b[90m  5 |\u001b[39m \u001b[36mconst\u001b[39m \u001b[33mTEST_USER\u001b[39m \u001b[33m=\u001b[39m { username\u001b[33m:\u001b[39m \u001b[32m'admin'\u001b[39m\u001b[33m,\u001b[39m password\u001b[33m:\u001b[39m \u001b[32m'admin123'\u001b[39m }\u001b[33m;\u001b[39m\n \u001b[90m  6 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  7 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'TacticalOps Platform - Comprehensive Testing'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n \u001b[90m    |\u001b[39m      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m  8 |\u001b[39m   \n \u001b[90m  9 |\u001b[39m   test(\u001b[32m'Infrastructure - VPS deployment health check'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m 10 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m'🔍 Testing VPS deployment health...'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
     },
     {
-      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "timestamp": "2025-08-07T21:20:49.406Z"
-    },
-    {
-      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "timestamp": "2025-08-07T21:20:49.410Z"
-    },
-    {
-      "message": "WebSocket connection to 'ws://localhost:7880/rtc?access_token=eyJhbGciOiJIUzI1NiJ9.eyJtZXRhZGF0YSI6IntcImRldmljZUlkXCI6XCJkZW1vLWRldmljZS0xXCIsXCJyb2xlXCI6XCJhZG1pblwiLFwidGltZXN0YW1wXCI6MTc1NDYwMTY1OTE1Mn0iLCJuYW1lIjoiQWRtaW4gVXNlciIsInZpZGVvIjp7InJvb20iOiJ2aWRlby1kZW1vLWRldmljZS0xLTE3NTQ2MDE2NTYxNzkiLCJyb29tSm9pbiI6dHJ1ZSwicm9vbUxpc3QiOnRydWUsInJvb21SZWNvcmQiOnRydWUsInJvb21BZG1pbiI6dHJ1ZSwiY2FuUHVibGlzaCI6dHJ1ZSwiY2FuU3Vic2NyaWJlIjp0cnVlLCJjYW5QdWJsaXNoRGF0YSI6dHJ1ZSwiY2FuVXBkYXRlT3duTWV0YWRhdGEiOnRydWV9LCJpc3MiOiJhbmRyb2lkLWFnZW50LWFwaS1rZXktMjAyNCIsImV4cCI6MTc1NDY4ODA1OSwibmJmIjowLCJzdWIiOiJhZG1pbi0xNzU0NjAxNjU5MTUyIn0.26T0SneFKpMub-rKdoRjOSOoRklwl9r7QR2lOkUuvoc&auto_subscribe=1&sdk=js&version=2.15.4&protocol=16' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
-      "timestamp": "2025-08-07T21:20:59.746Z"
-    },
-    {
-      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
-      "timestamp": "2025-08-07T21:20:59.773Z"
-    },
-    {
-      "message": "Failed to connect to LiveKit room: ConnectionError: could not establish signal connection: Failed to fetch\n    at Room.eval (webpack-internal:///(app-pages-browser)/./node_modules/livekit-client/dist/livekit-client.esm.mjs:23352:32)\n    at Generator.next (<anonymous>)\n    at fulfilled (webpack-internal:///(app-pages-browser)/./node_modules/livekit-client/dist/livekit-client.esm.mjs:6931:58)",
-      "timestamp": "2025-08-07T21:20:59.774Z"
-    },
-    {
-      "message": "WebSocket connection to 'ws://localhost:7880/rtc?access_token=eyJhbGciOiJIUzI1NiJ9.eyJtZXRhZGF0YSI6IntcImRldmljZUlkXCI6XCJkZW1vLWRldmljZS0xXCIsXCJyb2xlXCI6XCJhZG1pblwiLFwidGltZXN0YW1wXCI6MTc1NDYwMTY2MTk1Mn0iLCJuYW1lIjoiQWRtaW4gVXNlciIsInZpZGVvIjp7InJvb20iOiJhdWRpby1kZW1vLWRldmljZS0xLTE3NTQ2MDE2NjA0ODkiLCJyb29tSm9pbiI6dHJ1ZSwicm9vbUxpc3QiOnRydWUsInJvb21SZWNvcmQiOnRydWUsInJvb21BZG1pbiI6dHJ1ZSwiY2FuUHVibGlzaCI6dHJ1ZSwiY2FuU3Vic2NyaWJlIjp0cnVlLCJjYW5QdWJsaXNoRGF0YSI6dHJ1ZSwiY2FuVXBkYXRlT3duTWV0YWRhdGEiOnRydWV9LCJpc3MiOiJhbmRyb2lkLWFnZW50LWFwaS1rZXktMjAyNCIsImV4cCI6MTc1NDY4ODA2MSwibmJmIjowLCJzdWIiOiJhZG1pbi0xNzU0NjAxNjYxOTUyIn0.ry8Bik7fQg6BS9tliCq12RgDkujAaFDpAmgfIx4BtX8&auto_subscribe=1&sdk=js&version=2.15.4&protocol=16' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
-      "timestamp": "2025-08-07T21:21:02.120Z"
-    },
-    {
-      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
-      "timestamp": "2025-08-07T21:21:02.135Z"
-    },
-    {
-      "message": "Failed to connect to LiveKit room: ConnectionError: could not establish signal connection: Failed to fetch\n    at Room.eval (webpack-internal:///(app-pages-browser)/./node_modules/livekit-client/dist/livekit-client.esm.mjs:23352:32)\n    at Generator.next (<anonymous>)\n    at fulfilled (webpack-internal:///(app-pages-browser)/./node_modules/livekit-client/dist/livekit-client.esm.mjs:6931:58)",
-      "timestamp": "2025-08-07T21:21:02.154Z"
-    },
-    {
-      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "timestamp": "2025-08-07T21:21:16.552Z"
-    },
-    {
-      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
-      "timestamp": "2025-08-07T21:21:16.555Z"
+      "message": "Error: No tests found.\nMake sure that arguments are regular expressions matching test files.\nYou may need to escape symbols like \"$\" or \"*\" and quote the arguments.",
+      "stack": "Error: No tests found.\nMake sure that arguments are regular expressions matching test files.\nYou may need to escape symbols like \"$\" or \"*\" and quote the arguments."
     }
   ],
-  "performance": {
-    "totalLoadTime": 4096,
-    "domContentLoaded": 0.09999999776482582,
-    "loadComplete": 0,
-    "firstPaint": 456,
-    "firstContentfulPaint": 456
-  },
-  "timestamp": "2025-08-07T21:20:33.264Z"
+  "stats": {
+    "startTime": "2025-08-13T00:47:12.287Z",
+    "duration": 243.59799999999996,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
 }

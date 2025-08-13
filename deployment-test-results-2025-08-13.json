@@ -1,0 +1,87 @@
+{
+  "deployment": {
+    "containers": {
+      "tacticalops_app": {
+        "status": "NOT_FOUND",
+        "success": false,
+        "error": "Container not found or not running"
+      },
+      "tacticalops_postgres": {
+        "status": "NOT_FOUND",
+        "success": false,
+        "error": "Container not found or not running"
+      },
+      "tacticalops_redis": {
+        "status": "NOT_FOUND",
+        "success": false,
+        "error": "Container not found or not running"
+      },
+      "tacticalops_minio": {
+        "status": "NOT_FOUND",
+        "success": false,
+        "error": "Container not found or not running"
+      }
+    },
+    "services": {
+      "Web Application": {
+        "url": "https://ta.consulting.sa/api/health",
+        "statusCode": 526,
+        "success": false,
+        "responseTime": 1755045865330
+      },
+      "Database Health": {
+        "url": "https://ta.consulting.sa/api/health/db",
+        "statusCode": 526,
+        "success": false,
+        "responseTime": 1755045866004
+      },
+      "Cache Health": {
+        "url": "https://ta.consulting.sa/api/health/cache",
+        "statusCode": 526,
+        "success": false,
+        "responseTime": 1755045866604
+      },
+      "Main Dashboard": {
+        "url": "https://ta.consulting.sa",
+        "statusCode": 526,
+        "success": false,
+        "responseTime": 1755045867002
+      }
+    },
+    "database": {
+      "postgresql": {
+        "status": "DISCONNECTED",
+        "success": false,
+        "error": "Command failed: docker exec tacticalops_postgres pg_isready -U postgres\nCannot connect to the Docker daemon at unix:///home/asim/.docker/desktop/docker.sock. Is the docker daemon running?\n"
+      },
+      "redis": {
+        "status": "DISCONNECTED",
+        "success": false,
+        "error": "Command failed: docker exec tacticalops_redis redis-cli ping\nCannot connect to the Docker daemon at unix:///home/asim/.docker/desktop/docker.sock. Is the docker daemon running?\n"
+      }
+    },
+    "ssl": {
+      "certificate": "VALID",
+      "details": "notBefore=Jul 19 22:21:51 2025 GMT\nnotAfter=Oct 17 23:21:27 2025 GMT",
+      "success": true,
+      "redirect": "WORKING"
+    },
+    "nginx": {
+      "configuration": "INVALID",
+      "success": false,
+      "error": "spawnSync /bin/sh ETIMEDOUT",
+      "service": "INACTIVE"
+    },
+    "overall": {
+      "passed": 1,
+      "total": 11,
+      "percentage": 9,
+      "status": "FAILED"
+    }
+  },
+  "security": {},
+  "api": {},
+  "ui": {},
+  "performance": {},
+  "integration": {}
+}

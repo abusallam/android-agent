@@ -1,33 +1,6 @@
 version: '3.8'
 
 services:
-  # Nginx Load Balancer and Reverse Proxy
-  nginx:
-    image: nginx:1.24-alpine
-    container_name: tacticalops-nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/sites-enabled:/etc/nginx/sites-enabled:ro
-      - ./ssl:/etc/ssl/certs:ro
-      - ./logs/nginx:/var/log/nginx
-      - nginx_cache:/var/cache/nginx
-    depends_on:
-      - tacticalops-app
-    restart: unless-stopped
-    networks:
-      - tacticalops-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    labels:
-      - "com.tacticalops.service=nginx"
-      - "com.tacticalops.tier=production"
-
   # TacticalOps Main Application
   tacticalops-app:
     build:
@@ -41,28 +14,50 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
-      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@tacticalops-postgres:5432/${DB_NAME}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@tacticalops-redis:6379
       - JWT_SECRET=${JWT_SECRET}
       - ENCRYPTION_KEY=${ENCRYPTION_KEY}
       - SESSION_SECRET=${SESSION_SECRET}
       - API_VERSION=v2
       - DEPLOYMENT_TIER=${DEPLOYMENT_TIER:-civilian}
-      - FEATURES_ENABLED=${FEATURES_ENABLED:-basic,mapping,emergency,communication}
+      - FEATURES_ENABLED=${FEATURES_ENABLED:-basic,mapping,emergency,communication,geospatial,storage}
       - AGENT_API_KEY=${AGENT_API_KEY}
       - RATE_LIMIT_REQUESTS=${RATE_LIMIT_REQUESTS:-1000}
       - RATE_LIMIT_WINDOW=${RATE_LIMIT_WINDOW:-3600}
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - PROMETHEUS_ENABLED=true
       - GRAFANA_ENABLED=true
+      # AI/LLM Configuration
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENROUTER_MODEL=${OPENROUTER_MODEL}
+      - AGENT_LLM_PROVIDER=${AGENT_LLM_PROVIDER}
+      - AGENT_LLM_MODEL=${AGENT_LLM_MODEL}
+      - AGENT_LLM_API_KEY=${AGENT_LLM_API_KEY}
+      # MinIO S3 Configuration
+      - S3_ENDPOINT=${S3_ENDPOINT}
+      - S3_ACCESS_KEY=${S3_ACCESS_KEY}
+      - S3_SECRET_KEY=${S3_SECRET_KEY}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - S3_REGION=${S3_REGION}
+      # LiveKit Configuration
+      - LIVEKIT_URL=${LIVEKIT_URL}
+      - LIVEKIT_API_KEY=${LIVEKIT_API_KEY}
+      - LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET}
+      # Contact Configuration
+      - NEXT_PUBLIC_CONTACT_EMAIL=${NEXT_PUBLIC_CONTACT_EMAIL}
     volumes:
       - app_uploads:/app/uploads
       - app_logs:/app/logs
       - app_cache:/app/.next/cache
+    ports:
+      - "127.0.0.1:3010:3000"  # Use port 3010 to avoid conflicts
     depends_on:
-      postgres:
+      tacticalops-postgres:
         condition: service_healthy
-      redis:
+      tacticalops-redis:
+        condition: service_healthy
+      tacticalops-minio:
         condition: service_healthy
     restart: unless-stopped
     networks:
@@ -85,9 +80,9 @@ services:
       - "com.tacticalops.service=app"
       - "com.tacticalops.tier=production"
 
-  # PostgreSQL Database
-  postgres:
-    image: postgres:15-alpine
+  # PostgreSQL Database with PostGIS
+  tacticalops-postgres:
+    image: postgis/postgis:15-3.4-alpine
     container_name: tacticalops-postgres
     environment:
       - POSTGRES_DB=${DB_NAME}
@@ -95,13 +90,18 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
       - PGDATA=/var/lib/postgresql/data/pgdata
+      # PostGIS Configuration
+      - POSTGIS_GDAL_ENABLED_DRIVERS=${POSTGIS_GDAL_ENABLED_DRIVERS:-ENABLE_ALL}
+      - POSTGIS_ENABLE_OUTDB_RASTERS=${POSTGIS_ENABLE_OUTDB_RASTERS:-1}
+      - POSTGIS_GDAL_DISABLE_READDIR_ON_OPEN=${POSTGIS_GDAL_DISABLE_READDIR_ON_OPEN:-EMPTY_DIR}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+      - ./init-db-postgis.sql:/docker-entrypoint-initdb.d/01-init-db.sql:ro
+      - ./init-postgis.sql:/docker-entrypoint-initdb.d/02-init-postgis.sql:ro
       - ./backups:/backups
       - postgres_logs:/var/log/postgresql
     ports:
-      - "127.0.0.1:5432:5432"  # Only accessible from localhost
+      - "127.0.0.1:5433:5432"  # Use port 5433 to avoid conflicts
     restart: unless-stopped
     networks:
       - tacticalops-network
@@ -123,16 +123,85 @@ services:
       - "com.tacticalops.service=database"
       - "com.tacticalops.tier=production"
 
+  # MinIO S3-Compatible Object Storage
+  tacticalops-minio:
+    image: minio/minio:RELEASE.2024-01-16T16-07-38Z
+    container_name: tacticalops-minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - MINIO_REGION=${MINIO_REGION:-us-east-1}
+      - MINIO_BROWSER_REDIRECT_URL=https://${DOMAIN}/minio
+    volumes:
+      - minio_data:/data
+      - minio_config:/root/.minio
+    ports:
+      - "127.0.0.1:9000:9000"   # MinIO API
+      - "127.0.0.1:9001:9001"   # MinIO Console
+    restart: unless-stopped
+    networks:
+      - tacticalops-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.1'
+    labels:
+      - "com.tacticalops.service=storage"
+      - "com.tacticalops.tier=production"
+
+  # MinIO Client for bucket initialization
+  tacticalops-minio-init:
+    image: minio/mc:RELEASE.2024-01-13T08-44-48Z
+    container_name: tacticalops-minio-init
+    depends_on:
+      tacticalops-minio:
+        condition: service_healthy
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    entrypoint: >
+      /bin/sh -c "
+      echo 'Waiting for MinIO to be ready...';
+      sleep 10;
+      /usr/bin/mc alias set minio http://tacticalops-minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD};
+      /usr/bin/mc mb minio/${STORAGE_BUCKET_UPLOADS:-tacticalops-uploads} --ignore-existing;
+      /usr/bin/mc mb minio/${STORAGE_BUCKET_MAPS:-tacticalops-maps} --ignore-existing;
+      /usr/bin/mc mb minio/${STORAGE_BUCKET_MEDIA:-tacticalops-media} --ignore-existing;
+      /usr/bin/mc mb minio/${STORAGE_BUCKET_BACKUPS:-tacticalops-backups} --ignore-existing;
+      /usr/bin/mc mb minio/${STORAGE_BUCKET_LOGS:-tacticalops-logs} --ignore-existing;
+      /usr/bin/mc policy set public minio/${STORAGE_BUCKET_UPLOADS:-tacticalops-uploads};
+      /usr/bin/mc policy set public minio/${STORAGE_BUCKET_MAPS:-tacticalops-maps};
+      echo 'MinIO buckets initialized successfully';
+      exit 0;
+      "
+    networks:
+      - tacticalops-network
+    restart: "no"
+    labels:
+      - "com.tacticalops.service=storage-init"
+      - "com.tacticalops.tier=production"
+
   # Redis Cache and Session Store
-  redis:
+  tacticalops-redis:
     image: redis:7-alpine
     container_name: tacticalops-redis
     command: >
       redis-server 
       --appendonly yes 
       --requirepass ${REDIS_PASSWORD}
-      --maxmemory 512mb
-      --maxmemory-policy allkeys-lru
+      --maxmemory ${REDIS_MAX_MEMORY:-512mb}
+      --maxmemory-policy ${REDIS_POLICY:-allkeys-lru}
       --save 900 1
       --save 300 10
       --save 60 10000
@@ -140,7 +209,7 @@ services:
       - redis_data:/data
       - redis_logs:/var/log/redis
     ports:
-      - "127.0.0.1:6379:6379"  # Only accessible from localhost
+      - "127.0.0.1:6380:6379"  # Use port 6380 to avoid conflicts
     restart: unless-stopped
     networks:
       - tacticalops-network
@@ -162,7 +231,7 @@ services:
       - "com.tacticalops.tier=production"
 
   # Prometheus Monitoring
-  prometheus:
+  tacticalops-prometheus:
     image: prom/prometheus:v2.45.0
     container_name: tacticalops-prometheus
     command:
@@ -170,12 +239,12 @@ services:
       - '--storage.tsdb.path=/prometheus'
       - '--web.console.libraries=/etc/prometheus/console_libraries'
       - '--web.console.templates=/etc/prometheus/consoles'
-      - '--storage.tsdb.retention.time=30d'
+      - '--storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-30d}'
       - '--web.enable-lifecycle'
       - '--web.enable-admin-api'
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ./monitoring/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
       - prometheus_data:/prometheus
     ports:
       - "127.0.0.1:9090:9090"  # Only accessible from localhost
@@ -202,7 +271,7 @@ services:
       - "com.tacticalops.tier=production"
 
   # Grafana Dashboard
-  grafana:
+  tacticalops-grafana:
     image: grafana/grafana:10.0.0
     container_name: tacticalops-grafana
     environment:
@@ -221,12 +290,12 @@ services:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
     ports:
-      - "127.0.0.1:3001:3000"  # Only accessible from localhost
+      - "127.0.0.1:3011:3000"  # Use port 3011 to avoid conflicts
     restart: unless-stopped
     networks:
       - tacticalops-network
     depends_on:
-      - prometheus
+      - tacticalops-prometheus
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
       interval: 30s
@@ -245,7 +314,7 @@ services:
       - "com.tacticalops.tier=production"
 
   # Log Aggregation (Loki)
-  loki:
+  tacticalops-loki:
     image: grafana/loki:2.8.0
     container_name: tacticalops-loki
     command: -config.file=/etc/loki/local-config.yaml
@@ -275,7 +344,7 @@ services:
       - "com.tacticalops.tier=production"
 
   # Log Shipping (Promtail)
-  promtail:
+  tacticalops-promtail:
     image: grafana/promtail:2.8.0
     container_name: tacticalops-promtail
     command: -config.file=/etc/promtail/config.yml
@@ -290,7 +359,7 @@ services:
     networks:
       - tacticalops-network
     depends_on:
-      - loki
+      - tacticalops-loki
     deploy:
       resources:
         limits:
@@ -304,31 +373,39 @@ services:
       - "com.tacticalops.tier=production"
 
   # Backup Service
-  backup:
+  tacticalops-backup:
     image: postgres:15-alpine
     container_name: tacticalops-backup
     environment:
       - PGPASSWORD=${DB_PASSWORD}
-      - DB_HOST=postgres
+      - DB_HOST=tacticalops-postgres
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - BACKUP_RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-30}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - BACKUP_BUCKET=${STORAGE_BUCKET_BACKUPS:-tacticalops-backups}
     volumes:
       - ./scripts/backup.sh:/backup.sh:ro
+      - ./scripts/minio-backup.sh:/minio-backup.sh:ro
       - ./backups:/backups
       - backup_logs:/var/log/backup
     command: >
       sh -c "
+        apk add --no-cache curl &&
         echo '0 2 * * * /backup.sh >> /var/log/backup/backup.log 2>&1' | crontab - &&
+        echo '30 2 * * * /minio-backup.sh >> /var/log/backup/minio-backup.log 2>&1' | crontab - &&
         crond -f
       "
     restart: unless-stopped
     networks:
       - tacticalops-network
     depends_on:
-      postgres:
+      tacticalops-postgres:
         condition: service_healthy
-      redis:
+      tacticalops-redis:
+        condition: service_healthy
+      tacticalops-minio:
         condition: service_healthy
     deploy:
       resources:
@@ -356,6 +433,18 @@ volumes:
       type: none
       o: bind
       device: ${DATA_PATH:-./data}/redis
+  minio_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-./data}/minio
+  minio_config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-./data}/minio-config
   prometheus_data:
     driver: local
     driver_opts:

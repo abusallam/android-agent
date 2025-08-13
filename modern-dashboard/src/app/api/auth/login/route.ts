@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { verifyPassword, createToken, setAuthCookie } from '@/lib/auth';
-
-const prisma = new PrismaClient();
+import { EnhancedAuth, SECURITY_TIERS, SecurityTier } from '@/lib/enhanced-auth';
+import { setAuthCookie } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { username, password } = body;
+    const { username, password, securityTier, mfaCode } = body;
 
     if (!username || !password) {
       return NextResponse.json(
@@ -16,65 +14,49 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user in database
-    const user = await prisma.user.findUnique({
-      where: { username }
-    });
+    // Determine security tier
+    const tier = (securityTier as SecurityTier) || SECURITY_TIERS.CIVILIAN;
 
-    if (!user) {
+    // Authenticate user with enhanced security
+    const authResult = await EnhancedAuth.authenticateUser(
+      username, 
+      password, 
+      tier, 
+      mfaCode
+    );
+
+    if (!authResult) {
       return NextResponse.json(
-        { success: false, message: 'Invalid credentials' },
+        { success: false, message: 'Invalid credentials or MFA code required' },
         { status: 401 }
       );
     }
 
-    // Verify password
-    const isValidPassword = await verifyPassword(password, user.password);
-    if (!isValidPassword) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid credentials' },
-        { status: 401 }
-      );
-    }
-
-    // Create JWT token
-    const token = await createToken({
-      id: user.id,
-      username: user.username,
-      role: user.role
-    });
-
-    // Create session in database
-    const session = await prisma.session.create({
-      data: {
-        sessionToken: token,
-        userId: user.id,
-        expires: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
-      }
-    });
-
-    // Set auth cookie
-    await setAuthCookie(token);
+    // Set auth cookie for web sessions
+    await setAuthCookie(authResult.accessToken);
 
     return NextResponse.json({
       success: true,
       user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        role: user.role
+        id: authResult.user.id,
+        username: authResult.user.username,
+        email: authResult.user.email,
+        role: authResult.user.role,
+        securityTier: authResult.user.securityTier,
+        permissions: authResult.user.permissions,
+        mfaEnabled: authResult.user.mfaEnabled
       },
-      token
+      token: authResult.accessToken,
+      refreshToken: authResult.refreshToken,
+      expiresAt: authResult.expiresAt
     });
 
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Enhanced login error:', error);
     return NextResponse.json(
       { success: false, message: 'Authentication failed' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 

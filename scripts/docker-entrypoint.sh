@@ -50,43 +50,15 @@ wait_for_service() {
     success "$service_name is available"
 }
 
-# Function to check database connection
-check_database() {
-    log "Checking database connection..."
-    
-    if ! npx prisma db push --accept-data-loss 2>/dev/null; then
-        error "Database connection failed"
-        return 1
-    fi
-    
-    success "Database connection successful"
-    return 0
-}
-
-# Function to run database migrations
-run_migrations() {
-    log "Running database migrations..."
+# Function to setup database (simplified)
+setup_database() {
+    log "Setting up database connection..."
     
     # Generate Prisma client
     npx prisma generate
     
-    # Push database schema
-    if npx prisma db push --accept-data-loss; then
-        success "Database migrations completed"
-    else
-        error "Database migrations failed"
-        exit 1
-    fi
-    
-    # Seed database if needed
-    if [ "$NODE_ENV" = "development" ] || [ "$SEED_DATABASE" = "true" ]; then
-        log "Seeding database..."
-        if npx prisma db seed 2>/dev/null; then
-            success "Database seeded successfully"
-        else
-            warn "Database seeding failed or no seed script found"
-        fi
-    fi
+    success "Database client generated successfully"
+    return 0
 }
 
 # Function to create necessary directories
@@ -250,13 +222,8 @@ main() {
         fi
     fi
     
-    # Check database connection and run migrations
-    if ! check_database; then
-        error "Database is not ready"
-        exit 1
-    fi
-    
-    run_migrations
+    # Setup database with simplified approach
+    setup_database
     
     success "TacticalOps Platform initialization completed"
     

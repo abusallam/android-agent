@@ -1,694 +1,392 @@
+/**
+ * Agent Tactical Operations API
+ * Comprehensive tactical operations management for AI agents
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
-import { z } from 'zod';
+import { PrismaClient } from '@prisma/client';
 
-// Tactical operation schemas
-const mapAnalysisSchema = z.object({
-  bounds: z.object({
-    north: z.number(),
-    south: z.number(),
-    east: z.number(),
-    west: z.number()
-  }),
-  analysisType: z.enum(['terrain', 'threat', 'resource', 'route']).default('terrain'),
-  parameters: z.record(z.any()).optional().default({})
-});
+const prisma = new PrismaClient();
 
-const routePlanningSchema = z.object({
-  waypoints: z.array(z.object({
-    lat: z.number(),
-    lng: z.number(),
-    name: z.string().optional(),
-    type: z.enum(['start', 'waypoint', 'destination']).default('waypoint')
-  })).min(2, 'At least 2 waypoints required'),
-  preferences: z.object({
-    routeType: z.enum(['fastest', 'shortest', 'safest', 'tactical']).default('tactical'),
-    avoidAreas: z.array(z.object({
-      lat: z.number(),
-      lng: z.number(),
-      radius: z.number()
-    })).optional().default([]),
-    vehicleType: z.enum(['foot', 'vehicle', 'aircraft']).default('foot'),
-    maxDistance: z.number().optional(),
-    maxTime: z.number().optional()
-  }).optional().default({})
-});
-
-const missionPlanSchema = z.object({
-  name: z.string().min(1, 'Mission name is required'),
-  description: z.string().optional(),
-  type: z.enum(['reconnaissance', 'patrol', 'rescue', 'transport', 'security']),
-  priority: z.enum(['low', 'medium', 'high', 'critical']).default('medium'),
-  location: z.object({
-    lat: z.number(),
-    lng: z.number(),
-    radius: z.number().optional().default(1000)
-  }),
-  timeline: z.object({
-    startTime: z.string(),
-    endTime: z.string().optional(),
-    duration: z.number().optional()
-  }),
-  resources: z.object({
-    personnel: z.number().optional().default(0),
-    vehicles: z.array(z.string()).optional().default([]),
-    equipment: z.array(z.string()).optional().default([])
-  }).optional().default({}),
-  objectives: z.array(z.string()).min(1, 'At least one objective is required'),
-  constraints: z.array(z.string()).optional().default([])
-});
-
-const threatAssessmentSchema = z.object({
-  area: z.object({
-    center: z.object({
-      lat: z.number(),
-      lng: z.number()
-    }),
-    radius: z.number().default(5000)
-  }),
-  threatTypes: z.array(z.enum(['hostile', 'environmental', 'infrastructure', 'cyber'])).optional().default(['hostile']),
-  timeframe: z.enum(['current', '1h', '6h', '24h', '7d']).default('current'),
-  confidenceLevel: z.enum(['low', 'medium', 'high']).optional()
-});
-
-// Agent authentication middleware
-function verifyAgentToken(request: NextRequest) {
-  const authHeader = request.headers.get('Authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    throw new Error('Missing or invalid authorization header');
-  }
-  
-  const token = authHeader.substring(7);
-  const jwtSecret = process.env.JWT_SECRET || 'tactical-ops-secret-2024';
-  
+export async function GET(request: NextRequest) {
   try {
-    const decoded = jwt.verify(token, jwtSecret) as any;
-    if (decoded.type !== 'agent') {
-      throw new Error('Invalid token type');
-    }
-    return decoded;
-  } catch (error) {
-    throw new Error('Invalid or expired token');
-  }
-}
+    const { searchParams } = new URL(request.url);
+    const action = searchParams.get('action');
+    const operationId = searchParams.get('operationId');
+    const agentId = request.headers.get('x-agent-id');
 
-// Map analysis endpoint
-export async function POST(request: NextRequest) {
-  try {
-    // Verify agent authentication
-    const agent = verifyAgentToken(request);
-    
-    // Check if agent has tactical operations capability
-    if (!agent.capabilities.includes('tactical-operations')) {
+    if (!agentId) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: { 
-            code: 'INSUFFICIENT_PERMISSIONS', 
-            message: 'Agent does not have tactical-operations capability' 
-          } 
-        },
-        { status: 403 }
+        { error: 'Agent ID required' },
+        { status: 401 }
       );
     }
-    
-    const body = await request.json();
-    const { action } = body;
-    
+
     switch (action) {
-      case 'analyze_map':
-        return await handleMapAnalysis(body, agent);
-      case 'plan_route':
-        return await handleRoutePlanning(body, agent);
-      case 'create_mission':
-        return await handleMissionCreation(body, agent);
-      case 'assess_threats':
-        return await handleThreatAssessment(body, agent);
+      case 'get_active_operations':
+        const operations = await prisma.$queryRawUnsafe(`
+          SELECT 
+            to_op.id,
+            to_op.name,
+            to_op.description,
+            to_op.operation_type,
+            to_op.status,
+            to_op.priority,
+            ST_AsGeoJSON(to_op.operation_area) as operation_area,
+            ST_X(to_op.center_point) as center_longitude,
+            ST_Y(to_op.center_point) as center_latitude,
+            to_op.assigned_to,
+            to_op.objectives,
+            to_op.resources,
+            to_op.start_time,
+            to_op.end_time,
+            to_op.task_assignments,
+            to_op.ai_analysis,
+            COUNT(DISTINCT d.id) as assigned_devices,
+            COUNT(DISTINCT ta.id) as assigned_assets,
+            COUNT(DISTINCT t.id) as active_tasks
+          FROM tactical.operations to_op
+          LEFT JOIN devices d ON d.user_id = ANY(to_op.assigned_to)
+          LEFT JOIN tactical.assets ta ON ta.assigned_operation = to_op.id
+          LEFT JOIN agentic.tasks t ON t.operation_id = to_op.id AND t.status IN ('pending', 'in_progress')
+          WHERE to_op.status IN ('planning', 'active')
+          GROUP BY to_op.id
+          ORDER BY to_op.priority DESC, to_op.created_at DESC
+        `);
+
+        return NextResponse.json({
+          operations,
+          metadata: {
+            total: operations.length,
+            agent_id: agentId,
+            timestamp: new Date().toISOString()
+          }
+        });
+
+      case 'get_operation_details':
+        if (!operationId) {
+          return NextResponse.json(
+            { error: 'Operation ID required' },
+            { status: 400 }
+          );
+        }
+
+        const operationDetails = await prisma.$queryRawUnsafe(`
+          SELECT 
+            to_op.*,
+            ST_AsGeoJSON(to_op.operation_area) as operation_area_geojson,
+            ST_X(to_op.center_point) as center_longitude,
+            ST_Y(to_op.center_point) as center_latitude,
+            u.username as created_by_user,
+            array_agg(DISTINCT d.device_name) as assigned_device_names,
+            array_agg(DISTINCT ta.name) as assigned_asset_names,
+            array_agg(DISTINCT t.title) as active_task_titles
+          FROM tactical.operations to_op
+          LEFT JOIN users u ON to_op.created_by = u.id
+          LEFT JOIN devices d ON d.user_id = ANY(to_op.assigned_to)
+          LEFT JOIN tactical.assets ta ON ta.assigned_operation = to_op.id
+          LEFT JOIN agentic.tasks t ON t.operation_id = to_op.id AND t.status IN ('pending', 'in_progress')
+          WHERE to_op.id = $1
+          GROUP BY to_op.id, u.username
+        `, operationId);
+
+        if (operationDetails.length === 0) {
+          return NextResponse.json(
+            { error: 'Operation not found' },
+            { status: 404 }
+          );
+        }
+
+        return NextResponse.json({
+          operation: operationDetails[0],
+          agent_id: agentId,
+          timestamp: new Date().toISOString()
+        });
+
+      case 'get_tactical_intelligence':
+        const intelligence = await prisma.$queryRawUnsafe(`
+          SELECT 
+            'emergency_alert' as intel_type,
+            ea.id,
+            ea.title as summary,
+            ea.description,
+            ea.severity as priority,
+            ST_X(ea.location) as longitude,
+            ST_Y(ea.location) as latitude,
+            ea.created_at as timestamp,
+            ea.metadata
+          FROM emergency_alerts ea
+          WHERE ea.status = 'active'
+          
+          UNION ALL
+          
+          SELECT 
+            'device_anomaly' as intel_type,
+            d.id,
+            'Device Status Anomaly' as summary,
+            'Device showing unusual behavior patterns' as description,
+            'medium' as priority,
+            ST_X(d.current_location) as longitude,
+            ST_Y(d.current_location) as latitude,
+            d.last_seen as timestamp,
+            d.metadata
+          FROM devices d
+          WHERE d.last_seen < NOW() - INTERVAL '1 hour'
+            AND d.is_active = true
+          
+          ORDER BY timestamp DESC
+          LIMIT 50
+        `);
+
+        return NextResponse.json({
+          intelligence,
+          analysis: {
+            threat_level: calculateThreatLevel(intelligence),
+            recommendations: generateTacticalRecommendations(intelligence),
+            priority_items: intelligence.filter(i => i.priority === 'critical' || i.priority === 'high').length
+          },
+          agent_id: agentId,
+          timestamp: new Date().toISOString()
+        });
+
       default:
         return NextResponse.json(
-          { 
-            success: false, 
-            error: { 
-              code: 'INVALID_ACTION', 
-              message: 'Invalid tactical action specified' 
-            } 
-          },
+          { error: 'Unknown action' },
           { status: 400 }
         );
     }
-    
+
   } catch (error) {
-    console.error('Tactical operations error:', error);
-    
-    if (error.message.includes('token') || error.message.includes('authorization')) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: { 
-            code: 'AUTHENTICATION_ERROR', 
-            message: error.message 
-          } 
-        },
-        { status: 401 }
-      );
-    }
-    
+    console.error('Error in agent tactical API:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: { 
-          code: 'INTERNAL_ERROR', 
-          message: 'Failed to process tactical operation' 
-        } 
-      },
+      { error: 'Failed to process tactical request' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
-// Get tactical information
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    // Verify agent authentication
-    const agent = verifyAgentToken(request);
-    
-    // Check if agent has tactical operations capability
-    if (!agent.capabilities.includes('tactical-operations')) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: { 
-            code: 'INSUFFICIENT_PERMISSIONS', 
-            message: 'Agent does not have tactical-operations capability' 
-          } 
-        },
-        { status: 403 }
-      );
-    }
-    
-    const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type');
-    const missionId = searchParams.get('missionId');
-    
-    if (missionId) {
-      // Get specific mission
-      const mission = await getMissionById(missionId);
-      if (!mission) {
-        return NextResponse.json(
-          { 
-            success: false, 
-            error: { 
-              code: 'MISSION_NOT_FOUND', 
-              message: 'Mission not found' 
-            } 
-          },
-          { status: 404 }
-        );
-      }
-      
-      return NextResponse.json({
-        success: true,
-        data: { mission },
-        message: 'Mission retrieved successfully'
-      });
-    }
-    
-    switch (type) {
-      case 'missions':
-        return await handleGetMissions(agent);
-      case 'active_operations':
-        return await handleGetActiveOperations(agent);
-      case 'threat_status':
-        return await handleGetThreatStatus(agent);
-      case 'resource_status':
-        return await handleGetResourceStatus(agent);
-      default:
-        return await handleGetTacticalOverview(agent);
-    }
-    
-  } catch (error) {
-    console.error('Tactical information retrieval error:', error);
-    
-    if (error.message.includes('token') || error.message.includes('authorization')) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: { 
-            code: 'AUTHENTICATION_ERROR', 
-            message: error.message 
-          } 
-        },
-        { status: 401 }
-      );
-    }
-    
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: { 
-          code: 'INTERNAL_ERROR', 
-          message: 'Failed to retrieve tactical information' 
-        } 
-      },
-      { status: 500 }
-    );
-  }
-}
-
-// Update mission status
-export async function PUT(request: NextRequest) {
-  try {
-    // Verify agent authentication
-    const agent = verifyAgentToken(request);
-    
-    // Check if agent has tactical operations capability
-    if (!agent.capabilities.includes('tactical-operations')) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: { 
-            code: 'INSUFFICIENT_PERMISSIONS', 
-            message: 'Agent does not have tactical-operations capability' 
-          } 
-        },
-        { status: 403 }
-      );
-    }
-    
     const body = await request.json();
-    const { missionId, status, updates } = body;
-    
-    if (!missionId || !status) {
+    const { action, data } = body;
+    const agentId = request.headers.get('x-agent-id');
+
+    if (!agentId) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: { 
-            code: 'MISSING_PARAMETERS', 
-            message: 'Mission ID and status are required' 
-          } 
-        },
-        { status: 400 }
-      );
-    }
-    
-    const validStatuses = ['planned', 'active', 'paused', 'completed', 'cancelled', 'failed'];
-    if (!validStatuses.includes(status)) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: { 
-            code: 'INVALID_STATUS', 
-            message: `Invalid status. Valid statuses: ${validStatuses.join(', ')}` 
-          } 
-        },
-        { status: 400 }
-      );
-    }
-    
-    // Update mission (mock implementation)
-    const updatedMission = {
-      id: missionId,
-      status,
-      updatedAt: new Date().toISOString(),
-      updatedBy: agent.agentId,
-      ...updates
-    };
-    
-    console.log(`🎯 Mission ${missionId} status updated to ${status} by agent ${agent.agentId}`);
-    
-    return NextResponse.json({
-      success: true,
-      data: { mission: updatedMission },
-      message: 'Mission status updated successfully'
-    });
-    
-  } catch (error) {
-    console.error('Mission update error:', error);
-    
-    if (error.message.includes('token') || error.message.includes('authorization')) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: { 
-            code: 'AUTHENTICATION_ERROR', 
-            message: error.message 
-          } 
-        },
+        { error: 'Agent ID required' },
         { status: 401 }
       );
     }
-    
+
+    switch (action) {
+      case 'create_operation':
+        const newOperation = await prisma.$queryRawUnsafe(`
+          INSERT INTO tactical.operations (
+            name, description, operation_type, status, priority,
+            created_by, assigned_to, operation_area, center_point,
+            objectives, resources, constraints, ai_analysis
+          ) VALUES (
+            $1, $2, $3, $4, $5, $6, $7, 
+            ST_GeomFromGeoJSON($8), ST_GeomFromText($9, 4326),
+            $10, $11, $12, $13
+          ) RETURNING id
+        `,
+          data.name,
+          data.description,
+          data.operationType,
+          data.status || 'planning',
+          data.priority || 'medium',
+          data.createdBy,
+          data.assignedTo || [],
+          JSON.stringify(data.operationArea),
+          `POINT(${data.centerPoint.longitude} ${data.centerPoint.latitude})`,
+          data.objectives || [],
+          JSON.stringify(data.resources || {}),
+          JSON.stringify(data.constraints || {}),
+          JSON.stringify({
+            created_by_agent: agentId,
+            ai_confidence: data.confidence || 0.8,
+            analysis_timestamp: new Date().toISOString()
+          })
+        );
+
+        return NextResponse.json({
+          success: true,
+          operationId: newOperation[0].id,
+          agent_id: agentId
+        });
+
+      case 'update_operation_status':
+        await prisma.$queryRawUnsafe(`
+          UPDATE tactical.operations 
+          SET status = $1,
+              ai_analysis = ai_analysis || $2,
+              updated_at = NOW()
+          WHERE id = $3
+        `,
+          data.status,
+          JSON.stringify({
+            status_updated_by_agent: agentId,
+            status_change_reason: data.reason,
+            confidence: data.confidence || 0.8,
+            timestamp: new Date().toISOString()
+          }),
+          data.operationId
+        );
+
+        return NextResponse.json({ success: true });
+
+      case 'analyze_tactical_situation':
+        const situationData = await prisma.$queryRawUnsafe(`
+          SELECT 
+            COUNT(DISTINCT d.id) as total_devices,
+            COUNT(DISTINCT CASE WHEN d.is_active THEN d.id END) as active_devices,
+            COUNT(DISTINCT ea.id) as active_alerts,
+            COUNT(DISTINCT to_op.id) as active_operations,
+            COUNT(DISTINCT ta.id) as operational_assets,
+            AVG(d.battery_level) as avg_battery_level
+          FROM devices d
+          FULL OUTER JOIN emergency_alerts ea ON ea.status = 'active'
+          FULL OUTER JOIN tactical.operations to_op ON to_op.status = 'active'
+          FULL OUTER JOIN tactical.assets ta ON ta.status = 'operational'
+        `);
+
+        const analysis = {
+          situation_assessment: analyzeTacticalSituation(situationData[0]),
+          threat_level: calculateThreatLevel(situationData[0]),
+          recommendations: generateTacticalRecommendations(situationData[0]),
+          resource_status: assessResourceStatus(situationData[0]),
+          analyzed_by: agentId,
+          analysis_timestamp: new Date().toISOString()
+        };
+
+        // Store analysis
+        await prisma.$queryRawUnsafe(`
+          INSERT INTO system_metrics (
+            metric_name, metric_value, source, agent_id, metadata
+          ) VALUES (
+            'tactical_situation_analysis', 1, 'tactical_agent', $1, $2
+          )
+        `, agentId, JSON.stringify(analysis));
+
+        return NextResponse.json({
+          success: true,
+          analysis,
+          agent_id: agentId
+        });
+
+      case 'assign_resources':
+        // Assign resources to operation
+        await prisma.$queryRawUnsafe(`
+          UPDATE tactical.assets 
+          SET assigned_operation = $1,
+              status = 'deployed',
+              updated_at = NOW()
+          WHERE id = ANY($2)
+        `, data.operationId, data.assetIds);
+
+        return NextResponse.json({ success: true });
+
+      default:
+        return NextResponse.json(
+          { error: 'Unknown action' },
+          { status: 400 }
+        );
+    }
+
+  } catch (error) {
+    console.error('Error processing agent tactical operation:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: { 
-          code: 'INTERNAL_ERROR', 
-          message: 'Failed to update mission status' 
-        } 
-      },
+      { error: 'Failed to process operation' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
-// Handler functions
+// Helper functions for AI analysis
+function analyzeTacticalSituation(data: any) {
+  const deviceReadiness = (data.active_devices / data.total_devices) * 100;
+  const batteryHealth = data.avg_battery_level || 0;
+  const alertLevel = data.active_alerts || 0;
 
-async function handleMapAnalysis(body: any, agent: any) {
-  const validatedData = mapAnalysisSchema.parse(body);
-  
-  // Perform map analysis (mock implementation)
-  const analysis = {
-    bounds: validatedData.bounds,
-    analysisType: validatedData.analysisType,
-    results: {
-      terrain: {
-        elevation: {
-          min: 120,
-          max: 450,
-          average: 285
-        },
-        slope: {
-          average: 12.5,
-          maxSlope: 35.2,
-          difficulty: 'moderate'
-        },
-        landCover: {
-          forest: 45,
-          urban: 25,
-          water: 15,
-          open: 15
-        }
-      },
-      accessibility: {
-        vehicleAccess: 'limited',
-        footAccess: 'good',
-        aircraftLanding: 'possible'
-      },
-      strategicValue: {
-        visibility: 'high',
-        coverConcealment: 'moderate',
-        defensibility: 'good'
-      }
-    },
-    recommendations: [
-      'Primary approach from eastern ridge provides best cover',
-      'Avoid southern approach due to open terrain exposure',
-      'Consider helicopter insertion at coordinates 34.0522, -118.2437'
-    ],
-    timestamp: new Date().toISOString(),
-    agentId: agent.agentId
+  let assessment = 'NORMAL';
+  if (alertLevel > 5 || deviceReadiness < 70 || batteryHealth < 30) {
+    assessment = 'DEGRADED';
+  }
+  if (alertLevel > 10 || deviceReadiness < 50 || batteryHealth < 20) {
+    assessment = 'CRITICAL';
+  }
+
+  return {
+    overall_status: assessment,
+    device_readiness: `${deviceReadiness.toFixed(1)}%`,
+    battery_health: `${batteryHealth.toFixed(1)}%`,
+    active_alerts: alertLevel,
+    operational_capacity: deviceReadiness > 80 ? 'HIGH' : deviceReadiness > 60 ? 'MEDIUM' : 'LOW'
   };
-  
-  return NextResponse.json({
-    success: true,
-    data: { analysis },
-    message: 'Map analysis completed successfully'
-  });
 }
 
-async function handleRoutePlanning(body: any, agent: any) {
-  const validatedData = routePlanningSchema.parse(body);
-  
-  // Plan route (mock implementation)
-  const route = {
-    waypoints: validatedData.waypoints,
-    preferences: validatedData.preferences,
-    plannedRoute: {
-      distance: 12.5, // km
-      estimatedTime: 180, // minutes
-      difficulty: 'moderate',
-      riskLevel: 'low',
-      coordinates: validatedData.waypoints.map((wp, index) => ({
-        ...wp,
-        order: index + 1,
-        estimatedArrival: new Date(Date.now() + (index * 30 * 60 * 1000)).toISOString()
-      }))
-    },
-    alternatives: [
-      {
-        name: 'Safer Route',
-        distance: 15.2,
-        estimatedTime: 220,
-        riskLevel: 'very_low',
-        description: 'Longer but avoids high-risk areas'
-      },
-      {
-        name: 'Faster Route',
-        distance: 10.8,
-        estimatedTime: 150,
-        riskLevel: 'medium',
-        description: 'Shorter but through contested area'
-      }
-    ],
-    hazards: [
-      {
-        type: 'checkpoint',
-        location: { lat: 34.0522, lng: -118.2437 },
-        severity: 'medium',
-        description: 'Military checkpoint - expect delays'
-      }
-    ],
-    recommendations: [
-      'Depart during early morning hours for better concealment',
-      'Carry extra water due to desert terrain',
-      'Maintain radio silence in sector 7-9'
-    ],
-    timestamp: new Date().toISOString(),
-    agentId: agent.agentId
-  };
-  
-  return NextResponse.json({
-    success: true,
-    data: { route },
-    message: 'Route planned successfully'
-  });
+function calculateThreatLevel(data: any) {
+  const alertCount = data.active_alerts || 0;
+  const deviceReadiness = (data.active_devices / data.total_devices) * 100;
+
+  if (alertCount === 0 && deviceReadiness > 90) return 'GREEN';
+  if (alertCount <= 2 && deviceReadiness > 70) return 'YELLOW';
+  if (alertCount <= 5 && deviceReadiness > 50) return 'ORANGE';
+  return 'RED';
 }
 
-async function handleMissionCreation(body: any, agent: any) {
-  const validatedData = missionPlanSchema.parse(body);
+function generateTacticalRecommendations(data: any) {
+  const recommendations = [];
   
-  // Create mission (mock implementation)
-  const missionId = `mission_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  
-  const mission = {
-    id: missionId,
-    ...validatedData,
-    status: 'planned',
-    createdAt: new Date().toISOString(),
-    createdBy: agent.agentId,
-    estimatedDuration: validatedData.timeline.duration || 240, // minutes
-    riskAssessment: {
-      overall: 'medium',
-      factors: [
-        'Weather conditions favorable',
-        'Moderate terrain difficulty',
-        'Limited intelligence on area'
-      ]
-    },
-    requiredApprovals: validatedData.priority === 'critical' ? ['commander', 'operations'] : ['operations'],
-    contingencyPlans: [
-      'Extraction plan Alpha - helicopter pickup',
-      'Fallback position at coordinates 34.0500, -118.2400'
-    ]
-  };
-  
-  console.log(`🎯 Mission created: ${missionId} by agent ${agent.agentId}`);
-  
-  return NextResponse.json({
-    success: true,
-    data: { mission },
-    message: 'Mission created successfully'
-  });
-}
-
-async function handleThreatAssessment(body: any, agent: any) {
-  const validatedData = threatAssessmentSchema.parse(body);
-  
-  // Assess threats (mock implementation)
-  const assessment = {
-    area: validatedData.area,
-    threatTypes: validatedData.threatTypes,
-    timeframe: validatedData.timeframe,
-    threats: [
-      {
-        id: 'threat_001',
-        type: 'hostile',
-        severity: 'medium',
-        confidence: 'high',
-        location: {
-          lat: validatedData.area.center.lat + 0.001,
-          lng: validatedData.area.center.lng - 0.001
-        },
-        description: 'Unidentified armed group reported in sector',
-        lastSeen: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-        movement: 'stationary',
-        estimatedStrength: '8-12 personnel'
-      },
-      {
-        id: 'threat_002',
-        type: 'environmental',
-        severity: 'low',
-        confidence: 'high',
-        description: 'Flash flood risk due to weather conditions',
-        timeWindow: '6-12 hours',
-        affectedAreas: ['valley_sector_3', 'river_crossing_alpha']
-      }
-    ],
-    overallRiskLevel: 'medium',
-    recommendations: [
-      'Increase patrol frequency in sector 7',
-      'Establish observation post on Hill 205',
-      'Monitor weather conditions for flood risk',
-      'Coordinate with local authorities for intelligence updates'
-    ],
-    nextAssessment: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(), // 4 hours
-    timestamp: new Date().toISOString(),
-    agentId: agent.agentId
-  };
-  
-  return NextResponse.json({
-    success: true,
-    data: { assessment },
-    message: 'Threat assessment completed successfully'
-  });
-}
-
-async function handleGetMissions(agent: any) {
-  // Mock missions data
-  const missions = [
-    {
-      id: 'mission_001',
-      name: 'Reconnaissance Alpha',
-      type: 'reconnaissance',
-      status: 'active',
+  if (data.avg_battery_level < 30) {
+    recommendations.push({
+      type: 'resource_management',
       priority: 'high',
-      location: { lat: 34.0522, lng: -118.2437 },
-      startTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      estimatedCompletion: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-      personnel: 4,
-      progress: 65
-    },
-    {
-      id: 'mission_002',
-      name: 'Supply Run Bravo',
-      type: 'transport',
-      status: 'planned',
+      action: 'Initiate battery conservation protocols',
+      details: 'Multiple devices showing low battery levels'
+    });
+  }
+
+  if (data.active_alerts > 5) {
+    recommendations.push({
+      type: 'emergency_response',
+      priority: 'critical',
+      action: 'Escalate emergency response procedures',
+      details: 'High number of active alerts requiring attention'
+    });
+  }
+
+  if ((data.active_devices / data.total_devices) < 0.7) {
+    recommendations.push({
+      type: 'communication',
       priority: 'medium',
-      location: { lat: 34.0600, lng: -118.2500 },
-      startTime: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
-      estimatedDuration: 180,
-      personnel: 6,
-      vehicles: ['truck_01', 'escort_01']
-    }
-  ];
-  
-  return NextResponse.json({
-    success: true,
-    data: { missions },
-    message: 'Missions retrieved successfully'
-  });
+      action: 'Check communication systems',
+      details: 'Significant number of devices offline'
+    });
+  }
+
+  return recommendations;
 }
 
-async function handleGetActiveOperations(agent: any) {
-  const operations = {
-    active: 3,
-    planned: 5,
-    completed_today: 2,
-    operations: [
-      {
-        id: 'op_001',
-        name: 'Sector Patrol',
-        status: 'active',
-        personnel: 8,
-        startTime: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-        lastUpdate: new Date(Date.now() - 15 * 60 * 1000).toISOString()
-      }
-    ]
-  };
-  
-  return NextResponse.json({
-    success: true,
-    data: operations,
-    message: 'Active operations retrieved successfully'
-  });
-}
-
-async function handleGetThreatStatus(agent: any) {
-  const threatStatus = {
-    overallLevel: 'medium',
-    activeThreats: 2,
-    monitoredAreas: 5,
-    lastUpdate: new Date().toISOString(),
-    threats: [
-      {
-        id: 'threat_001',
-        type: 'hostile',
-        severity: 'medium',
-        location: 'Sector 7',
-        status: 'monitoring'
-      }
-    ]
-  };
-  
-  return NextResponse.json({
-    success: true,
-    data: threatStatus,
-    message: 'Threat status retrieved successfully'
-  });
-}
-
-async function handleGetResourceStatus(agent: any) {
-  const resourceStatus = {
+function assessResourceStatus(data: any) {
+  return {
     personnel: {
-      available: 45,
-      deployed: 23,
-      reserve: 12,
-      unavailable: 10
-    },
-    vehicles: {
-      operational: 8,
-      maintenance: 2,
-      deployed: 6
+      total: data.total_devices,
+      active: data.active_devices,
+      readiness: ((data.active_devices / data.total_devices) * 100).toFixed(1) + '%'
     },
     equipment: {
-      communications: 'good',
-      medical: 'adequate',
-      weapons: 'good',
-      supplies: 'low'
+      operational: data.operational_assets,
+      status: data.operational_assets > 0 ? 'AVAILABLE' : 'LIMITED'
+    },
+    communications: {
+      status: data.active_devices > 0 ? 'OPERATIONAL' : 'DEGRADED',
+      coverage: 'FULL' // This would be calculated based on mesh network status
     }
-  };
-  
-  return NextResponse.json({
-    success: true,
-    data: resourceStatus,
-    message: 'Resource status retrieved successfully'
-  });
-}
-
-async function handleGetTacticalOverview(agent: any) {
-  const overview = {
-    operationalStatus: 'normal',
-    activeMissions: 3,
-    threatLevel: 'medium',
-    resourceReadiness: 85,
-    weatherConditions: 'favorable',
-    communicationStatus: 'operational',
-    lastUpdate: new Date().toISOString()
-  };
-  
-  return NextResponse.json({
-    success: true,
-    data: overview,
-    message: 'Tactical overview retrieved successfully'
-  });
-}
-
-async function getMissionById(missionId: string) {
-  // Mock mission retrieval
-  return {
-    id: missionId,
-    name: 'Sample Mission',
-    status: 'active',
-    // ... other mission data
   };
 }
