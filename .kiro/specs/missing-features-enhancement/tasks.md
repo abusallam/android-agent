@@ -30,7 +30,7 @@ Convert the missing features design into a series of coding tasks for implementi
     - _Requirements: 2.1, 2.5, 2.6_
 
 - [ ] 3. Build real-time WebSocket infrastructure
-  - [ ] 3.1 Implement WebSocket server with connection management
+  - [x] 3.1 Implement WebSocket server with connection management
     - Create WebSocket server with authentication and connection pooling
     - Add automatic reconnection logic and heartbeat monitoring
     - Implement message routing and broadcasting to specific clients

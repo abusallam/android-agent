@@ -1,163 +1,127 @@
-# Comprehensive Testing & Validation - Requirements Document
+# Requirements Document - Comprehensive Testing & Validation
 
 ## Introduction
 
-This specification defines comprehensive testing and validation requirements for the TacticalOps Platform deployed on our VPS at `ta.consulting.sa`. We need to validate all implemented features, security measures, performance, and user experience across all roles and security tiers using Playwright MCP for automated testing.
+This document outlines the requirements for comprehensive testing and validation of the TacticalOps platform deployment, including domain configuration fixes, SSL setup, and complete feature testing across all system components.
 
 ## Requirements
 
-### Requirement 1: VPS Deployment Validation
+### Requirement 1: Domain & SSL Configuration
 
-**User Story:** As a DevOps engineer, I want to validate that our VPS deployment is fully operational with all services running correctly, so that I can ensure the platform is ready for production use.
-
-#### Acceptance Criteria
-
-1. WHEN accessing the main domain THEN the system SHALL respond with HTTPS redirect and valid SSL certificate
-2. WHEN checking all Docker containers THEN they SHALL be running and healthy (tacticalops-app, postgres, redis, minio)
-3. WHEN testing database connectivity THEN PostgreSQL with PostGIS SHALL be accessible and responsive
-4. WHEN verifying API endpoints THEN all critical APIs SHALL return proper responses with correct authentication
-5. WHEN checking file storage THEN MinIO SHALL be operational with proper bucket configuration
-6. WHEN monitoring system resources THEN CPU, memory, and disk usage SHALL be within acceptable limits
-
-### Requirement 2: Authentication & Authorization Testing
-
-**User Story:** As a security officer, I want comprehensive testing of all authentication and authorization mechanisms across all security tiers, so that I can ensure proper access control and security compliance.
+**User Story:** As a system administrator, I want the TacticalOps platform to be accessible via HTTPS with proper SSL certificates, so that users can securely access the application.
 
 #### Acceptance Criteria
 
-1. WHEN testing login functionality THEN users SHALL authenticate successfully with valid credentials
-2. WHEN testing role-based access THEN civilian, government, and military users SHALL see appropriate features
-3. WHEN testing JWT tokens THEN they SHALL be properly generated, validated, and expired
-4. WHEN testing API authentication THEN agent APIs SHALL require proper API keys and tokens
-5. WHEN testing unauthorized access THEN the system SHALL properly deny access and log attempts
-6. WHEN testing session management THEN sessions SHALL timeout appropriately and maintain security
+1. WHEN accessing https://tacticalops.ta.consulting.sa THEN the system SHALL respond with valid SSL certificate
+2. WHEN accessing http://tacticalops.ta.consulting.sa THEN the system SHALL redirect to HTTPS version
+3. IF Cloudflare proxy is enabled THEN the system SHALL use appropriate origin certificates
+4. WHEN SSL handshake occurs THEN the system SHALL complete successfully without errors
+5. WHEN security headers are requested THEN the system SHALL include HSTS, X-Frame-Options, and CSP headers
 
-### Requirement 3: Tactical Mapping System Testing
+### Requirement 2: Authentication System Testing
 
-**User Story:** As a tactical operator, I want comprehensive testing of the ATAK-inspired mapping system to ensure all geospatial features work correctly with real-time collaboration.
-
-#### Acceptance Criteria
-
-1. WHEN loading the tactical map THEN it SHALL render within 2 seconds with proper PostGIS data
-2. WHEN testing real-time collaboration THEN multiple users SHALL see synchronized map updates
-3. WHEN testing geofencing THEN alerts SHALL trigger properly when boundaries are crossed
-4. WHEN testing map layers THEN all layer types SHALL load and display correctly
-5. WHEN testing map annotations THEN users SHALL be able to create, edit, and delete annotations
-6. WHEN testing 3D visualization THEN terrain data SHALL render properly with elevation
-
-### Requirement 4: Agentic AI System Testing
-
-**User Story:** As a project administrator, I want comprehensive testing of all AI agent capabilities to ensure automated task management and system control work correctly.
+**User Story:** As a user, I want to securely log into the TacticalOps platform with proper authentication, so that I can access authorized features.
 
 #### Acceptance Criteria
 
-1. WHEN testing agent authentication THEN AI agents SHALL authenticate successfully with API keys
-2. WHEN testing system control API THEN agents SHALL be able to monitor and control system operations
-3. WHEN testing task management THEN agents SHALL create, monitor, and verify tasks automatically
-4. WHEN testing AI decision making THEN agents SHALL make appropriate decisions based on data
-5. WHEN testing multi-modal verification THEN agents SHALL verify tasks using location, activity, and sensor data
-6. WHEN testing agent communication THEN agents SHALL interact properly with the OpenRouter API
+1. WHEN valid credentials are provided THEN the system SHALL authenticate successfully
+2. WHEN invalid credentials are provided THEN the system SHALL reject with appropriate error message
+3. WHEN user is authenticated THEN the system SHALL provide JWT token with proper expiration
+4. WHEN user logs out THEN the system SHALL invalidate the session
+5. WHEN accessing protected routes without authentication THEN the system SHALL redirect to login
 
-### Requirement 5: Emergency Response System Testing
+### Requirement 3: Dashboard Functionality Testing
 
-**User Story:** As an emergency responder, I want comprehensive testing of emergency management features to ensure rapid response capabilities work under pressure.
-
-#### Acceptance Criteria
-
-1. WHEN testing emergency alerts THEN they SHALL be created, routed, and displayed properly
-2. WHEN testing panic button functionality THEN alerts SHALL trigger immediately with location data
-3. WHEN testing emergency contacts THEN the system SHALL provide quick access to emergency personnel
-4. WHEN testing resource coordination THEN emergency assets SHALL be tracked and coordinated
-5. WHEN testing emergency communications THEN priority channels SHALL work with LiveKit integration
-6. WHEN testing incident documentation THEN all emergency actions SHALL be logged with audit trails
-
-### Requirement 6: Real-time Communication Testing
-
-**User Story:** As a tactical operator, I want comprehensive testing of LiveKit integration and real-time communication features to ensure reliable tactical communications.
+**User Story:** As an administrator, I want to view comprehensive dashboard with real-time data, so that I can monitor system status and device information.
 
 #### Acceptance Criteria
 
-1. WHEN testing video calls THEN LiveKit SHALL establish connections with proper audio/video quality
-2. WHEN testing WebSocket connections THEN real-time updates SHALL synchronize across all clients
-3. WHEN testing communication sessions THEN they SHALL be properly managed and recorded
-4. WHEN testing emergency communications THEN priority channels SHALL override normal communications
-5. WHEN testing network resilience THEN communications SHALL adapt to changing network conditions
-6. WHEN testing integration with mapping THEN communications SHALL be linked to geospatial context
+1. WHEN dashboard loads THEN the system SHALL display device count, status indicators, and recent activity
+2. WHEN real-time updates occur THEN the system SHALL refresh data without page reload
+3. WHEN dashboard components render THEN the system SHALL show proper GitHub-inspired dark theme
+4. WHEN responsive design is tested THEN the system SHALL adapt to mobile, tablet, and desktop screens
+5. WHEN performance is measured THEN the system SHALL load dashboard within 2 seconds
 
-### Requirement 7: File Management & Storage Testing
+### Requirement 4: Device Management Testing
 
-**User Story:** As a user, I want comprehensive testing of file management capabilities to ensure secure and efficient document handling with MinIO integration.
-
-#### Acceptance Criteria
-
-1. WHEN testing file uploads THEN files SHALL be stored securely in MinIO with proper metadata
-2. WHEN testing file downloads THEN files SHALL be retrieved quickly with proper access control
-3. WHEN testing geospatial file integration THEN files SHALL be linked to map locations correctly
-4. WHEN testing file sharing THEN permissions SHALL be enforced based on user roles
-5. WHEN testing file search THEN full-text and geospatial search SHALL work efficiently
-6. WHEN testing file versioning THEN document history SHALL be maintained with proper audit trails
-
-### Requirement 8: Performance & Scalability Testing
-
-**User Story:** As a system administrator, I want comprehensive performance testing to ensure the platform can handle production loads with acceptable response times.
+**User Story:** As an administrator, I want to manage and monitor connected devices, so that I can track device status and location.
 
 #### Acceptance Criteria
 
-1. WHEN testing page load times THEN all pages SHALL load within 2 seconds
-2. WHEN testing API response times THEN all endpoints SHALL respond within 100ms average
-3. WHEN testing concurrent users THEN the system SHALL handle 100+ simultaneous users
-4. WHEN testing database performance THEN queries SHALL execute efficiently with proper indexing
-5. WHEN testing real-time updates THEN WebSocket messages SHALL have < 50ms latency
-6. WHEN testing resource usage THEN system SHALL operate within memory and CPU limits
+1. WHEN devices are listed THEN the system SHALL show device ID, name, model, status, and last seen
+2. WHEN device details are requested THEN the system SHALL display comprehensive device information
+3. WHEN device location is available THEN the system SHALL show GPS coordinates and map integration
+4. WHEN device status changes THEN the system SHALL update indicators in real-time
+5. WHEN device data is filtered THEN the system SHALL provide search and sorting capabilities
 
-### Requirement 9: Security Vulnerability Testing
+### Requirement 5: API Endpoints Testing
 
-**User Story:** As a security officer, I want comprehensive security testing to identify and validate protection against common vulnerabilities and attack vectors.
-
-#### Acceptance Criteria
-
-1. WHEN testing SQL injection THEN the system SHALL be protected against database attacks
-2. WHEN testing XSS attacks THEN the system SHALL properly sanitize user input
-3. WHEN testing CSRF attacks THEN the system SHALL have proper token validation
-4. WHEN testing authentication bypass THEN unauthorized access SHALL be prevented
-5. WHEN testing data encryption THEN sensitive data SHALL be properly encrypted in transit and at rest
-6. WHEN testing security headers THEN proper security headers SHALL be set for all responses
-
-### Requirement 10: User Experience & Accessibility Testing
-
-**User Story:** As a user with different abilities and devices, I want comprehensive UX testing to ensure the platform is accessible and usable across all scenarios.
+**User Story:** As a developer, I want all API endpoints to function correctly with proper responses, so that the system integrates properly with external services.
 
 #### Acceptance Criteria
 
-1. WHEN testing responsive design THEN the interface SHALL work properly on mobile, tablet, and desktop
-2. WHEN testing accessibility THEN the system SHALL meet WCAG 2.1 AA standards
-3. WHEN testing keyboard navigation THEN all features SHALL be accessible via keyboard
-4. WHEN testing screen readers THEN the interface SHALL be properly announced
-5. WHEN testing different browsers THEN the system SHALL work consistently across Chrome, Firefox, Safari
-6. WHEN testing theme switching THEN dark/light modes SHALL work properly with proper contrast
+1. WHEN /api/health is called THEN the system SHALL return 200 with system status information
+2. WHEN /api/auth/login is called with valid data THEN the system SHALL return authentication token
+3. WHEN /api/dashboard is called THEN the system SHALL return dashboard data in JSON format
+4. WHEN /api/device/sync is called THEN the system SHALL handle device synchronization
+5. WHEN API errors occur THEN the system SHALL return appropriate HTTP status codes and error messages
 
-### Requirement 11: Data Integrity & Backup Testing
+### Requirement 6: Database Integration Testing
 
-**User Story:** As a data administrator, I want comprehensive testing of data integrity and backup systems to ensure no data loss and proper recovery capabilities.
-
-#### Acceptance Criteria
-
-1. WHEN testing database transactions THEN data SHALL maintain ACID properties
-2. WHEN testing backup procedures THEN all data SHALL be backed up completely and regularly
-3. WHEN testing data recovery THEN backups SHALL restore properly without data loss
-4. WHEN testing data validation THEN input data SHALL be properly validated and sanitized
-5. WHEN testing concurrent operations THEN data consistency SHALL be maintained
-6. WHEN testing system failures THEN data SHALL be protected and recoverable
-
-### Requirement 12: Integration & End-to-End Testing
-
-**User Story:** As a system integrator, I want comprehensive end-to-end testing to ensure all features work together seamlessly as an integrated tactical platform.
+**User Story:** As a system administrator, I want the database to function correctly with all operations, so that data is stored and retrieved reliably.
 
 #### Acceptance Criteria
 
-1. WHEN testing complete workflows THEN users SHALL be able to complete complex tactical operations
-2. WHEN testing feature integration THEN mapping, communications, and emergency response SHALL work together
-3. WHEN testing data flow THEN information SHALL flow correctly between all system components
-4. WHEN testing user journeys THEN all user roles SHALL be able to complete their primary tasks
-5. WHEN testing system coordination THEN AI agents SHALL coordinate with human operators effectively
-6. WHEN testing operational scenarios THEN the system SHALL support realistic tactical operations
+1. WHEN database connection is tested THEN the system SHALL connect successfully to SQLite database
+2. WHEN user data is created THEN the system SHALL store with proper password hashing
+3. WHEN device data is inserted THEN the system SHALL maintain referential integrity
+4. WHEN GPS logs are recorded THEN the system SHALL store with accurate timestamps
+5. WHEN database queries are executed THEN the system SHALL return results within acceptable time limits
+
+### Requirement 7: Security Testing
+
+**User Story:** As a security administrator, I want the system to implement proper security measures, so that the platform is protected against common vulnerabilities.
+
+#### Acceptance Criteria
+
+1. WHEN security headers are checked THEN the system SHALL include X-Frame-Options, X-Content-Type-Options, HSTS
+2. WHEN password storage is tested THEN the system SHALL use bcrypt hashing with appropriate rounds
+3. WHEN JWT tokens are issued THEN the system SHALL include proper expiration and signing
+4. WHEN input validation is tested THEN the system SHALL sanitize all user inputs
+5. WHEN HTTPS is enforced THEN the system SHALL reject insecure HTTP connections
+
+### Requirement 8: Performance Testing
+
+**User Story:** As a user, I want the system to respond quickly and efficiently, so that I can work without delays.
+
+#### Acceptance Criteria
+
+1. WHEN page load time is measured THEN the system SHALL load within 2 seconds
+2. WHEN API response time is measured THEN the system SHALL respond within 100ms for health checks
+3. WHEN concurrent users access the system THEN the system SHALL maintain performance under load
+4. WHEN memory usage is monitored THEN the system SHALL operate within allocated container limits
+5. WHEN database queries are executed THEN the system SHALL complete within 50ms for simple queries
+
+### Requirement 9: UI/UX Testing
+
+**User Story:** As a user, I want an intuitive and responsive interface, so that I can easily navigate and use the platform.
+
+#### Acceptance Criteria
+
+1. WHEN UI components load THEN the system SHALL display GitHub-inspired dark theme consistently
+2. WHEN responsive design is tested THEN the system SHALL work on mobile, tablet, and desktop
+3. WHEN navigation is used THEN the system SHALL provide clear menu structure and breadcrumbs
+4. WHEN forms are submitted THEN the system SHALL provide immediate feedback and validation
+5. WHEN accessibility is tested THEN the system SHALL support keyboard navigation and screen readers
+
+### Requirement 10: Integration Testing
+
+**User Story:** As a system administrator, I want all system components to work together seamlessly, so that the platform operates as a cohesive unit.
+
+#### Acceptance Criteria
+
+1. WHEN containers are deployed THEN the system SHALL start all services in correct order
+2. WHEN services communicate THEN the system SHALL maintain proper network connectivity
+3. WHEN data flows between components THEN the system SHALL maintain data consistency
+4. WHEN external integrations are tested THEN the system SHALL handle API calls properly
+5. WHEN system restart occurs THEN the system SHALL recover all services automatically

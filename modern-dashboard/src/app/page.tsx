@@ -7,24 +7,44 @@ import { Logo } from "@/components/logo";
 // Dynamic import to prevent SSR
 import dynamic from 'next/dynamic';
 
-const DashboardContent = dynamic(() => import('@/components/DashboardContent').then(mod => ({ default: mod.default })), {
+const TacticalDashboard = dynamic(() => import('@/components/TacticalDashboard').then(mod => ({ default: mod.default })), {
   ssr: false,
   loading: () => (
-    <div className="min-h-screen bg-[#0d1117] text-white flex items-center justify-center">
-      <div className="text-center space-y-6">
-        <div className="flex justify-center">
-          <div className="animate-pulse">
-            <Logo size="lg" />
+    <div className="min-h-screen relative">
+      {/* Tactical Camo Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-amber-900/20 via-green-900/30 to-amber-800/20"></div>
+      <div 
+        className="absolute inset-0 opacity-30"
+        style={{
+          backgroundImage: `
+            radial-gradient(circle at 20% 50%, rgba(139, 69, 19, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(85, 107, 47, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 40% 80%, rgba(160, 82, 45, 0.2) 0%, transparent 50%),
+            radial-gradient(circle at 60% 30%, rgba(107, 142, 35, 0.2) 0%, transparent 50%)
+          `,
+          backgroundSize: '400px 400px, 300px 300px, 500px 500px, 350px 350px'
+        }}
+      ></div>
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-[1px]"></div>
+      
+      <div className="relative z-10 flex items-center justify-center min-h-screen">
+        <div className="text-center space-y-6">
+          <div className="flex justify-center">
+            <div className="animate-pulse">
+              <div className="w-20 h-20 bg-gradient-to-br from-amber-600 to-amber-800 rounded-full flex items-center justify-center border-2 border-amber-500/50">
+                <Logo size="lg" />
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="space-y-2">
-          <p className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
-            Android Agent AI
-          </p>
-          <p className="text-lg text-gray-400">Loading Dashboard...</p>
-        </div>
-        <div className="flex justify-center">
-          <div className="w-8 h-8 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+          <div className="space-y-2">
+            <p className="text-2xl font-bold text-amber-400">
+              TacticalOps Command
+            </p>
+            <p className="text-lg text-amber-200/80">Loading Dashboard...</p>
+          </div>
+          <div className="flex justify-center">
+            <div className="w-8 h-8 border-4 border-amber-500/30 border-t-amber-500 rounded-full animate-spin"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -41,21 +61,41 @@ export default function Dashboard() {
   if (!isMounted) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-[#0d1117] text-white flex items-center justify-center">
-          <div className="text-center space-y-6">
-            <div className="flex justify-center">
-              <div className="animate-pulse">
-                <Logo size="lg" />
+        <div className="min-h-screen relative">
+          {/* Tactical Camo Background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-900/20 via-green-900/30 to-amber-800/20"></div>
+          <div 
+            className="absolute inset-0 opacity-30"
+            style={{
+              backgroundImage: `
+                radial-gradient(circle at 20% 50%, rgba(139, 69, 19, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(85, 107, 47, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(160, 82, 45, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 60% 30%, rgba(107, 142, 35, 0.2) 0%, transparent 50%)
+              `,
+              backgroundSize: '400px 400px, 300px 300px, 500px 500px, 350px 350px'
+            }}
+          ></div>
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-[1px]"></div>
+          
+          <div className="relative z-10 flex items-center justify-center min-h-screen">
+            <div className="text-center space-y-6">
+              <div className="flex justify-center">
+                <div className="animate-pulse">
+                  <div className="w-20 h-20 bg-gradient-to-br from-amber-600 to-amber-800 rounded-full flex items-center justify-center border-2 border-amber-500/50">
+                    <Logo size="lg" />
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="space-y-2">
-              <p className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                Android Agent AI
-              </p>
-              <p className="text-lg text-gray-400">Initializing Dashboard...</p>
-            </div>
-            <div className="flex justify-center">
-              <div className="w-8 h-8 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+              <div className="space-y-2">
+                <p className="text-2xl font-bold text-amber-400">
+                  TacticalOps Command
+                </p>
+                <p className="text-lg text-amber-200/80">Initializing Dashboard...</p>
+              </div>
+              <div className="flex justify-center">
+                <div className="w-8 h-8 border-4 border-amber-500/30 border-t-amber-500 rounded-full animate-spin"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -65,7 +105,7 @@ export default function Dashboard() {
 
   return (
     <ProtectedRoute>
-      <DashboardContent />
+      <TacticalDashboard />
     </ProtectedRoute>
   );
 }

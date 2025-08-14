@@ -1,141 +1,69 @@
-# Multi-stage production Dockerfile for TacticalOps Platform
-# Optimized for security, performance, and minimal attack surface
+# TacticalOps Platform - Production Dockerfile
+# Multi-stage build for optimized production image
 
 # Stage 1: Dependencies
-FROM node:20-alpine AS deps
-LABEL stage=deps
-LABEL maintainer="TacticalOps Team <dev@tacticalops.com>"
-
-# Install security updates and required packages
-RUN apk update && apk upgrade && \
-    apk add --no-cache \
-    libc6-compat \
-    openssl \
-    ca-certificates && \
-    rm -rf /var/cache/apk/*
-
-# Create app directory with proper permissions
+FROM node:18-alpine AS deps
+RUN apk add --no-cache libc6-compat curl
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
-COPY prisma ./prisma/
-
-# Install dependencies with production optimizations
-RUN npm ci --only=production --no-audit --no-fund && \
-    npm cache clean --force
-
-# Generate Prisma client
-RUN npx prisma generate
+COPY package.json package-lock.json* ./
+RUN npm ci && npm cache clean --force
 
 # Stage 2: Builder
-FROM node:20-alpine AS builder
-LABEL stage=builder
-
-# Install build dependencies
-RUN apk update && apk add --no-cache \
-    libc6-compat \
-    openssl \
-    ca-certificates \
-    python3 \
-    make \
-    g++ && \
-    rm -rf /var/cache/apk/*
-
+FROM node:18-alpine AS builder
 WORKDIR /app
 
-# Copy package files and install all dependencies (including dev)
-COPY package*.json ./
-RUN npm ci --no-audit --no-fund
-
-# Copy source code
-COPY . .
+# Copy dependencies
 COPY --from=deps /app/node_modules ./node_modules
+COPY . .
 
-# Set build environment variables
-ARG NODE_ENV=production
-ARG BUILD_VERSION=2.0.0
-ARG API_VERSION=v2
-
-ENV NODE_ENV=${NODE_ENV}
-ENV BUILD_VERSION=${BUILD_VERSION}
-ENV API_VERSION=${API_VERSION}
+# Set environment for build
+ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Generate Prisma client
 RUN npx prisma generate
 
 # Build the application
-RUN npm run build && \
-    npm prune --production && \
-    npm cache clean --force
+RUN npm run build
 
-# Stage 3: Production Runtime
-FROM node:20-alpine AS runner
-LABEL stage=runner
-LABEL version=${BUILD_VERSION}
-LABEL description="TacticalOps Platform - Production Runtime"
-
-# Install runtime security updates and required packages
-RUN apk update && apk upgrade && \
-    apk add --no-cache \
-    libc6-compat \
-    openssl \
-    ca-certificates \
-    curl \
-    dumb-init \
-    tzdata && \
-    rm -rf /var/cache/apk/*
-
-# Create non-root user for security
-RUN addgroup --system --gid 1001 tacticalops && \
-    adduser --system --uid 1001 --ingroup tacticalops tacticalops
-
-# Set working directory
+# Stage 3: Runner
+FROM node:18-alpine AS runner
 WORKDIR /app
 
-# Set environment variables
+# Install curl for health checks
+RUN apk add --no-cache curl
+
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Set environment
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
 
-# Copy built application from builder stage
-COPY --from=builder --chown=tacticalops:tacticalops /app/public ./public
-COPY --from=builder --chown=tacticalops:tacticalops /app/.next/standalone ./
-COPY --from=builder --chown=tacticalops:tacticalops /app/.next/static ./.next/static
-COPY --from=builder --chown=tacticalops:tacticalops /app/prisma ./prisma
-COPY --from=builder --chown=tacticalops:tacticalops /app/node_modules/.prisma ./node_modules/.prisma
+# Copy built application
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 
-# Create necessary directories with proper permissions
-RUN mkdir -p /app/logs /app/uploads /app/tmp && \
-    chown -R tacticalops:tacticalops /app/logs /app/uploads /app/tmp
+# Copy Prisma files
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
-# Copy startup scripts (will be copied to build context by deployment script)
-COPY --chown=tacticalops:tacticalops docker-entrypoint.sh /docker-entrypoint.sh
-COPY --chown=tacticalops:tacticalops healthcheck.sh /healthcheck.sh
+# Create necessary directories
+RUN mkdir -p /app/data /app/logs /app/uploads && chown -R nextjs:nodejs /app
 
-# Make scripts executable
-RUN chmod +x /docker-entrypoint.sh /healthcheck.sh
-
-# Security hardening
-RUN chmod -R 755 /app && \
-    chmod -R 644 /app/public && \
-    find /app -type d -exec chmod 755 {} \; && \
-    find /app -name "*.js" -exec chmod 644 {} \;
-
-# Switch to non-root user
-USER tacticalops
+# Set permissions
+USER nextjs
 
 # Expose port
 EXPOSE 3000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD /healthcheck.sh
-
-# Use dumb-init to handle signals properly
-ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3000/api/health || exit 1
 
 # Start the application
-CMD ["/docker-entrypoint.sh"]
+CMD ["node", "server.js"]

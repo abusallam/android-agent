@@ -1,0 +1,304 @@
+{
+  "timestamp": "2025-08-14T18:59:50.510Z",
+  "version": "2.0.0",
+  "environment": "production",
+  "suites": {
+    "Domain & SSL": {
+      "suiteName": "Domain & SSL",
+      "tests": [
+        {
+          "testName": "Local HTTPS",
+          "status": "PASSED",
+          "duration": 0,
+          "timestamp": "2025-08-14T18:59:55.063Z",
+          "details": {
+            "statusCode": 200
+          },
+          "error": null
+        },
+        {
+          "testName": "HTTP Redirect",
+          "status": "PASSED",
+          "duration": 0,
+          "timestamp": "2025-08-14T18:59:59.074Z",
+          "details": {
+            "statusCode": 301
+          },
+          "error": null
+        },
+        {
+          "testName": "SSL Certificate",
+          "status": "WARNING",
+          "duration": 0,
+          "timestamp": "2025-08-14T19:00:03.845Z",
+          "details": {
+            "note": "Certificate exists but may not cover subdomain"
+          },
+          "error": null
+        },
+        {
+          "testName": "Security Headers",
+          "status": "PASSED",
+          "duration": 0,
+          "timestamp": "2025-08-14T19:00:08.452Z",
+          "details": {
+            "xFrame": true,
+            "xContent": true,
+            "hsts": true
+          },
+          "error": null
+        }
+      ],
+      "summary": {
+        "total": 4,
+        "passed": 3,
+        "failed": 0,
+        "warnings": 1,
+        "skipped": 0,
+        "duration": 17932
+      }
+    },
+    "Containers": {
+      "suiteName": "Containers & Services",
+      "tests": [
+        {
+          "testName": "Container tacticalops-app",
+          "status": "PASSED",
+          "duration": 0,
+          "timestamp": "2025-08-14T19:00:12.150Z",
+          "details": {
+            "state": "running",
+            "health": "unhealthy"
+          },
+          "error": null
+        },
+        {
+          "testName": "Container tacticalops-redis",
+          "status": "PASSED",
+          "duration": 0,
+          "timestamp": "2025-08-14T19:00:12.150Z",
+          "details": {
+            "state": "running",
+            "health": "healthy"
+          },
+          "error": null
+        }
+      ],
+      "summary": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "skipped": 0,
+        "duration": 3698
+      }
+    },
+    "API Endpoints": {
+      "suiteName": "API Endpoints",
+      "tests": [
+        {
+          "testName": "API Health",
+          "status": "PASSED",
+          "duration": 0,
+          "timestamp": "2025-08-14T19:00:16.440Z",
+          "details": {
+            "statusCode": 200,
+            "responseSize": 306
+          },
+          "error": null
+        },
+        {
+          "testName": "API Main Page",
+          "status": "PASSED",
+          "duration": 0,
+          "timestamp": "2025-08-14T19:00:20.434Z",
+          "details": {
+            "statusCode": 200,
+            "responseSize": 7756
+          },
+          "error": null
+        },
+        {
+          "testName": "API Login Page",
+          "status": "PASSED",
+          "duration": 0,
+          "timestamp": "2025-08-14T19:00:25.348Z",
+          "details": {
+            "statusCode": 200,
+            "responseSize": 12716
+          },
+          "error": null
+        },
+        {
+          "testName": "API Admin Page",
+          "status": "FAILED",
+          "duration": 0,
+          "timestamp": "2025-08-14T19:00:28.543Z",
+          "details": {
+            "statusCode": 404,
+            "responseSize": 7898
+          },
+          "error": null
+        }
+      ],
+      "summary": {
+        "total": 4,
+        "passed": 3,
+        "failed": 1,
+        "warnings": 0,
+        "skipped": 0,
+        "duration": 16392
+      }
+    },
+    "Database": {
+      "suiteName": "Database",
+      "tests": [
+        {
+          "testName": "Database Health",
+          "status": "PASSED",
+          "duration": 0,
+          "timestamp": "2025-08-14T19:00:33.336Z",
+          "details": {
+            "provider": "sqlite",
+            "status": "healthy"
+          },
+          "error": null
+        },
+        {
+          "testName": "Database File",
+          "status": "PASSED",
+          "duration": 0,
+          "timestamp": "2025-08-14T19:00:37.228Z",
+          "details": {
+            "exists": true
+          },
+          "error": null
+        },
+        {
+          "testName": "Test Data",
+          "status": "FAILED",
+          "duration": 0,
+          "timestamp": "2025-08-14T19:00:41.323Z",
+          "details": {},
+          "error": "Command failed: ssh -o StrictHostKeyChecking=no root@217.79.255.54 \"cd /opt/tacticalops && docker-compose -f docker-compose.vps-fixed.yml exec -T tacticalops-app node -e \"\n                const { PrismaClient } = require('@prisma/client');\n                const prisma = new PrismaClient();\n                prisma.user.count().then(count => {\n                    console.log('USER_COUNT:' + count);\n                    return prisma.device.count();\n                }).then(count => {\n                    console.log('DEVICE_COUNT:' + count);\n                    prisma.\\$disconnect();\n                }).catch(err => {\n                    console.log('ERROR:' + err.message);\n                    prisma.\\$disconnect();\n                });\n            \"\"\n***************************************************************************\n                    AUTHORIZED ACCESS ONLY\n***************************************************************************\nThis system is for authorized users only. All activities are monitored\nand logged. Unauthorized access is prohibited and will be prosecuted.\n***************************************************************************\ntime=\"2025-08-14T18:55:05Z\" level=warning msg=\"The \\\"NEXT_PUBLIC_CONTACT_EMAIL\\\" variable is not set. Defaulting to a blank string.\"\ntime=\"2025-08-14T18:55:05Z\" level=warning msg=\"/opt/tacticalops/docker-compose.vps-fixed.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion\"\nnode: -e requires an argument\n/bin/sh: 2: Syntax error: \"(\" unexpected\n"
+        }
+      ],
+      "summary": {
+        "total": 3,
+        "passed": 2,
+        "failed": 1,
+        "warnings": 0,
+        "skipped": 0,
+        "duration": 12779
+      }
+    },
+    "Performance": {
+      "suiteName": "Performance",
+      "tests": [
+        {
+          "testName": "Performance Main Page",
+          "status": "PASSED",
+          "duration": 14.442,
+          "timestamp": "2025-08-14T19:00:45.930Z",
+          "details": {
+            "responseTime": 14.442,
+            "target": 2000
+          },
+          "error": null
+        },
+        {
+          "testName": "Performance Health API",
+          "status": "PASSED",
+          "duration": 17.397,
+          "timestamp": "2025-08-14T19:00:50.539Z",
+          "details": {
+            "responseTime": 17.397,
+            "target": 100
+          },
+          "error": null
+        },
+        {
+          "testName": "Performance Login Page",
+          "status": "PASSED",
+          "duration": 18.731,
+          "timestamp": "2025-08-14T19:00:55.454Z",
+          "details": {
+            "responseTime": 18.731,
+            "target": 2000
+          },
+          "error": null
+        }
+      ],
+      "summary": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "skipped": 0,
+        "duration": 14130
+      }
+    },
+    "UI/UX": {
+      "suiteName": "UI/UX",
+      "tests": [
+        {
+          "testName": "UI Components",
+          "status": "PASSED",
+          "duration": 0,
+          "timestamp": "2025-08-14T19:01:00.372Z",
+          "details": {
+            "hasHtml": true,
+            "hasTitle": true,
+            "hasCSS": true,
+            "hasJS": true,
+            "hasReact": true,
+            "hasDarkTheme": true
+          },
+          "error": null
+        },
+        {
+          "testName": "Login Form",
+          "status": "PASSED",
+          "duration": 0,
+          "timestamp": "2025-08-14T19:01:04.670Z",
+          "details": {
+            "hasLoginForm": true
+          },
+          "error": null
+        }
+      ],
+      "summary": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "skipped": 0,
+        "duration": 9215
+      }
+    }
+  },
+  "overallSummary": {
+    "totalTests": 18,
+    "passedTests": 15,
+    "failedTests": 2,
+    "warningTests": 1,
+    "skippedTests": 0,
+    "successRate": 83,
+    "totalDuration": 74151
+  },
+  "recommendations": [
+    "Add tacticalops.ta.consulting.sa to SSL certificate or use tacticalops.consulting.sa instead",
+    "Check application logs and ensure all services are running",
+    "System is performing well - consider implementing monitoring and alerting"
+  ],
+  "criticalIssues": [
+    "SSL certificate does not cover tacticalops.ta.consulting.sa subdomain",
+    "1 API endpoint(s) not responding"
+  ],
+  "performanceMetrics": {
+    "avgResponseTime": 17,
+    "maxResponseTime": 18.731,
+    "memoryUsage": 0,
+    "cpuUsage": 0
+  }
+}

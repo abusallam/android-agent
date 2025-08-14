@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 // Configuration
-const BASE_URL = 'http://217.79.255.54:3000';
+const BASE_URL = 'https://ta.consulting.sa';
 const TEST_USER = { username: 'admin', password: 'admin123' };
 
 test.describe('TacticalOps Platform - Comprehensive Testing', () => {

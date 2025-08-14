@@ -1,0 +1,111 @@
+version: '3.8'
+
+services:
+  # TacticalOps Main Application
+  tacticalops-app:
+    build:
+      context: ./modern-dashboard
+      dockerfile: Dockerfile.production
+      args:
+        - NODE_ENV=production
+        - BUILD_VERSION=${BUILD_VERSION:-2.0.0}
+    image: tacticalops/platform:${BUILD_VERSION:-latest}
+    container_name: tacticalops-app
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=file:/app/data/tacticalops.db
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@tacticalops-redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - API_VERSION=v2
+      - DEPLOYMENT_TIER=${DEPLOYMENT_TIER:-civilian}
+      - FEATURES_ENABLED=${FEATURES_ENABLED:-basic,mapping,emergency,communication,geospatial,storage}
+      - AGENT_API_KEY=${AGENT_API_KEY}
+      - RATE_LIMIT_REQUESTS=${RATE_LIMIT_REQUESTS:-1000}
+      - RATE_LIMIT_WINDOW=${RATE_LIMIT_WINDOW:-3600}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      # Contact Configuration
+      - NEXT_PUBLIC_CONTACT_EMAIL=${NEXT_PUBLIC_CONTACT_EMAIL}
+    volumes:
+      - ./data:/app/data
+      - ./data/uploads:/app/uploads
+      - ./logs:/app/logs
+    ports:
+      - "127.0.0.1:3020:3000"  # Use port 3020 for tacticalops
+    depends_on:
+      tacticalops-redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - tacticalops-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    labels:
+      - "com.tacticalops.service=app"
+      - "com.tacticalops.tier=production"
+
+
+
+  # Redis Cache and Session Store
+  tacticalops-redis:
+    image: redis:7-alpine
+    container_name: tacticalops-redis
+    command: >
+      redis-server 
+      --appendonly yes 
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory ${REDIS_MAX_MEMORY:-256mb}
+      --maxmemory-policy ${REDIS_POLICY:-allkeys-lru}
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+    volumes:
+      - ./data/redis:/data
+    ports:
+      - "127.0.0.1:6382:6379"  # Use port 6382 for tacticalops
+    restart: unless-stopped
+    networks:
+      - tacticalops-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+    labels:
+      - "com.tacticalops.service=cache"
+      - "com.tacticalops.tier=production"
+
+# Networks
+networks:
+  tacticalops-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+          gateway: 172.25.0.1
+    driver_opts:
+      com.docker.network.bridge.name: tacticalops0
+      com.docker.network.bridge.enable_icc: "true"
+      com.docker.network.bridge.enable_ip_masquerade: "true"

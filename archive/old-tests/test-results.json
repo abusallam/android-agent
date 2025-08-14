@@ -58,6 +58,16 @@
   "errors": [
     {
       "message": "Error: Playwright Test did not expect test.describe() to be called here.\nMost common reasons include:\n- You are calling test.describe() in a configuration file.\n- You are calling test.describe() in a file that is imported by the configuration file.\n- You have two different versions of @playwright/test. This usually happens\n  when one of the dependencies in your package.json depends on @playwright/test.",
+      "stack": "Error: Playwright Test did not expect test.describe() to be called here.\nMost common reasons include:\n- You are calling test.describe() in a configuration file.\n- You are calling test.describe() in a file that is imported by the configuration file.\n- You have two different versions of @playwright/test. This usually happens\n  when one of the dependencies in your package.json depends on @playwright/test.\n    at TestTypeImpl._currentSuite (/home/asim/node_modules/@playwright/test/node_modules/playwright/lib/common/testType.js:74:13)\n    at TestTypeImpl._describe (/home/asim/node_modules/@playwright/test/node_modules/playwright/lib/common/testType.js:106:24)\n    at Function.describe (/home/asim/node_modules/@playwright/test/node_modules/playwright/lib/transform/transform.js:289:12)\n    at Object.<anonymous> (/home/asim/Documents/android-agent/playwright-tests/tacticalops-comprehensive.spec.js:13:6)",
+      "location": {
+        "file": "/home/asim/Documents/android-agent/playwright-tests/tacticalops-comprehensive.spec.js",
+        "column": 6,
+        "line": 13
+      },
+      "snippet": "\u001b[90m   at \u001b[39mtacticalops-comprehensive.spec.js:13\n\n\u001b[0m \u001b[90m 11 |\u001b[39m\n \u001b[90m 12 |\u001b[39m \u001b[90m// Test suite for TacticalOps Platform\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 13 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'TacticalOps Platform - Comprehensive Testing'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n \u001b[90m    |\u001b[39m      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 14 |\u001b[39m   \n \u001b[90m 15 |\u001b[39m   \u001b[90m// Configure test settings\u001b[39m\n \u001b[90m 16 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+    },
+    {
+      "message": "Error: Playwright Test did not expect test.describe() to be called here.\nMost common reasons include:\n- You are calling test.describe() in a configuration file.\n- You are calling test.describe() in a file that is imported by the configuration file.\n- You have two different versions of @playwright/test. This usually happens\n  when one of the dependencies in your package.json depends on @playwright/test.",
       "stack": "Error: Playwright Test did not expect test.describe() to be called here.\nMost common reasons include:\n- You are calling test.describe() in a configuration file.\n- You are calling test.describe() in a file that is imported by the configuration file.\n- You have two different versions of @playwright/test. This usually happens\n  when one of the dependencies in your package.json depends on @playwright/test.\n    at TestTypeImpl._currentSuite (/home/asim/node_modules/@playwright/test/node_modules/playwright/lib/common/testType.js:74:13)\n    at TestTypeImpl._describe (/home/asim/node_modules/@playwright/test/node_modules/playwright/lib/common/testType.js:106:24)\n    at Function.describe (/home/asim/node_modules/@playwright/test/node_modules/playwright/lib/transform/transform.js:289:12)\n    at Object.<anonymous> (/home/asim/Documents/android-agent/playwright-tests/tacticalops.spec.js:7:6)",
       "location": {
         "file": "/home/asim/Documents/android-agent/playwright-tests/tacticalops.spec.js",
@@ -67,13 +77,13 @@
       "snippet": "\u001b[90m   at \u001b[39mtacticalops.spec.js:7\n\n\u001b[0m \u001b[90m  5 |\u001b[39m \u001b[36mconst\u001b[39m \u001b[33mTEST_USER\u001b[39m \u001b[33m=\u001b[39m { username\u001b[33m:\u001b[39m \u001b[32m'admin'\u001b[39m\u001b[33m,\u001b[39m password\u001b[33m:\u001b[39m \u001b[32m'admin123'\u001b[39m }\u001b[33m;\u001b[39m\n \u001b[90m  6 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  7 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'TacticalOps Platform - Comprehensive Testing'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n \u001b[90m    |\u001b[39m      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m  8 |\u001b[39m   \n \u001b[90m  9 |\u001b[39m   test(\u001b[32m'Infrastructure - VPS deployment health check'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m 10 |\u001b[39m     console\u001b[33m.\u001b[39mlog(\u001b[32m'🔍 Testing VPS deployment health...'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
     },
     {
-      "message": "Error: No tests found.\nMake sure that arguments are regular expressions matching test files.\nYou may need to escape symbols like \"$\" or \"*\" and quote the arguments.",
-      "stack": "Error: No tests found.\nMake sure that arguments are regular expressions matching test files.\nYou may need to escape symbols like \"$\" or \"*\" and quote the arguments."
+      "message": "Error: No tests found",
+      "stack": "Error: No tests found"
     }
   ],
   "stats": {
-    "startTime": "2025-08-13T00:47:12.287Z",
-    "duration": 243.59799999999996,
+    "startTime": "2025-08-13T01:13:20.078Z",
+    "duration": 75.50599999999986,
     "expected": 0,
     "skipped": 0,
     "unexpected": 0,
