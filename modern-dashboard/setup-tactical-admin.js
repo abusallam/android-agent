@@ -15,18 +15,14 @@ async function setupTacticalAdmin() {
       where: { username: 'admin' },
       update: { 
         password: hashedPassword,
-        isActive: true,
         email: 'admin@tac.consulting.sa',
-        name: 'System Administrator',
-        role: 'ROOT_ADMIN'
+        role: 'ADMIN'
       },
       create: {
         username: 'admin',
         email: 'admin@tac.consulting.sa',
         password: hashedPassword,
-        role: 'ROOT_ADMIN',
-        name: 'System Administrator',
-        isActive: true
+        role: 'ADMIN'
       }
     });
     
@@ -72,16 +68,13 @@ async function setupTacticalAdmin() {
       await prisma.user.upsert({
         where: { username: user.username },
         update: { 
-          isActive: true,
           password: hashedPassword // Same password for demo: admin123
         },
         create: {
           username: user.username,
           email: user.email,
           password: hashedPassword,
-          role: user.role,
-          name: user.name,
-          isActive: true
+          role: user.role
         }
       });
       console.log(`  ✅ ${user.name} (${user.username})`);
@@ -97,7 +90,6 @@ async function setupTacticalAdmin() {
         model: 'Samsung Galaxy S23 Tactical',
         manufacturer: 'Samsung',
         isOnline: true,
-        batteryLevel: 85,
         location: JSON.stringify({
           latitude: 24.7136,
           longitude: 46.6753,
@@ -110,7 +102,6 @@ async function setupTacticalAdmin() {
         model: 'iPhone 14 Pro',
         manufacturer: 'Apple',
         isOnline: true,
-        batteryLevel: 92,
         location: JSON.stringify({
           latitude: 24.7156,
           longitude: 46.6773,
@@ -123,7 +114,6 @@ async function setupTacticalAdmin() {
         model: 'Google Pixel 8 Pro',
         manufacturer: 'Google',
         isOnline: false,
-        batteryLevel: 45,
         location: JSON.stringify({
           latitude: 24.7176,
           longitude: 46.6793,
@@ -145,7 +135,7 @@ async function setupTacticalAdmin() {
     console.log('\n📋 Login Credentials:');
     console.log('   Username: admin');
     console.log('   Password: admin123');
-    console.log('   Role: ROOT_ADMIN');
+    console.log('   Role: ADMIN');
     console.log('\n🔐 Additional Users (all use password: admin123):');
     tacticalUsers.forEach(user => {
       console.log(`   ${user.username} - ${user.name} (${user.role})`);

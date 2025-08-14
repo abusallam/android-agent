@@ -10,7 +10,7 @@ async function testTacticalFixes() {
   try {
     // Test 1: Check tactical theme on login page
     console.log('🎯 Test 1: Tactical Theme on Login Page');
-    await page.goto('https://tacticalops.ta.consulting.sa/login');
+    await page.goto('https://tac.consulting.sa/login');
     await page.waitForTimeout(3000);
     
     // Check for tactical camo background

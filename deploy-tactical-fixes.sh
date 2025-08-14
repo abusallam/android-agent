@@ -67,7 +67,7 @@ ssh -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "
 "
 
 echo -e "${GREEN}✅ Deployment Complete!${NC}"
-echo -e "${YELLOW}🌐 Website: https://tacticalops.ta.consulting.sa${NC}"
+echo -e "${YELLOW}🌐 Website: https://tac.consulting.sa${NC}"
 echo -e "${YELLOW}🔐 Login Credentials:${NC}"
 echo -e "   Username: admin"
 echo -e "   Password: admin123"
