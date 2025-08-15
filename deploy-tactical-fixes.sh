@@ -26,13 +26,13 @@ git commit -m "🎯 Fix: Tactical theme, Arabic/English support, authentication 
 - ✅ Fixed authentication database issues"
 
 echo -e "${BLUE}📤 Step 2: Pushing to GitHub...${NC}"
-git push origin main
+git push origin dev
 
 echo -e "${BLUE}🔄 Step 3: Pulling changes on VPS...${NC}"
 ssh -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "
     cd ${VPS_PATH} && 
     echo '🔄 Pulling latest changes...' &&
-    git pull origin main &&
+    git pull origin dev &&
     echo '✅ Changes pulled successfully'
 "
 
