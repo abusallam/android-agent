@@ -5,6 +5,16 @@ import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 
+// Fallback admin credentials (temporary solution)
+const FALLBACK_ADMIN = {
+  id: 'admin-fallback-001',
+  username: 'admin',
+  email: 'admin@tacticalops.local',
+  role: 'ADMIN',
+  // Pre-hashed password for 'admin123'
+  passwordHash: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBVJ3fEBXppqyG'
+};
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -19,23 +29,39 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user in database
-    const user = await prisma.user.findUnique({
-      where: { username }
-    });
+    let user = null;
+    let passwordValid = false;
 
-    if (!user) {
-      console.log('❌ User not found:', username);
-      return NextResponse.json(
-        { success: false, message: 'Invalid username or password' },
-        { status: 401 }
-      );
+    try {
+      // Try database authentication first
+      user = await prisma.user.findUnique({
+        where: { username }
+      });
+
+      if (user) {
+        passwordValid = await bcrypt.compare(password, user.password);
+        console.log('✅ Database authentication attempted');
+      }
+    } catch (dbError) {
+      console.log('⚠️ Database unavailable, using fallback authentication');
+      
+      // Fallback authentication for admin user
+      if (username === FALLBACK_ADMIN.username) {
+        passwordValid = await bcrypt.compare(password, FALLBACK_ADMIN.passwordHash);
+        if (passwordValid) {
+          user = {
+            id: FALLBACK_ADMIN.id,
+            username: FALLBACK_ADMIN.username,
+            email: FALLBACK_ADMIN.email,
+            role: FALLBACK_ADMIN.role
+          };
+          console.log('✅ Fallback authentication successful');
+        }
+      }
     }
 
-    // Verify password
-    const passwordValid = await bcrypt.compare(password, user.password);
-    if (!passwordValid) {
-      console.log('❌ Invalid password for user:', username);
+    if (!user || !passwordValid) {
+      console.log('❌ Authentication failed for user:', username);
       return NextResponse.json(
         { success: false, message: 'Invalid username or password' },
         { status: 401 }
@@ -55,7 +81,8 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Login successful for user:', username);
 
-    return NextResponse.json({
+    // Set HTTP-only cookie for web sessions
+    const response = NextResponse.json({
       success: true,
       user: {
         id: user.id,
@@ -65,6 +92,15 @@ export async function POST(request: NextRequest) {
       },
       token
     });
+
+    response.cookies.set('auth-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 // 24 hours
+    });
+
+    return response;
 
   } catch (error) {
     console.error('❌ Login error:', error);

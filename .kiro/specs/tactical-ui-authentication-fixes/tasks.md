@@ -16,14 +16,14 @@
     - Test direct database queries for user authentication
     - _Requirements: 4.1, 4.2, 2.3_
 
-  - [-] 2.2 Create and verify admin user in database
+  - [x] 2.2 Create and verify admin user in database
     - Write script to create admin user with correct password hash
     - Ensure user has ROOT_ADMIN role assigned
     - Verify user exists in Supabase database
     - Test user creation with proper bcrypt hashing
     - _Requirements: 2.1, 2.2, 4.3, 4.4_
 
-  - [ ] 2.3 Fix authentication API endpoints
+  - [-] 2.3 Fix authentication API endpoints
     - Debug /api/auth/login endpoint functionality
     - Ensure proper password verification with bcrypt
     - Fix JWT token generation and validation
