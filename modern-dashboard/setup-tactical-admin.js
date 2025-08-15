@@ -6,6 +6,8 @@ const prisma = new PrismaClient();
 async function setupTacticalAdmin() {
   try {
     console.log('🔧 Setting up TacticalOps admin users...');
+    console.log('📊 Database: Supabase Cloud PostgreSQL (Primary)');
+    console.log('🔄 Backup: PostgreSQL Container (VPS)');
     
     // Hash password with 12 rounds (secure)
     const hashedPassword = await bcrypt.hash('admin123', 12);

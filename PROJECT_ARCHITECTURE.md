@@ -1,3 +1,448 @@
-# 🏗️ TacticalOps Platform - Complete Architecture Documentation\n\n> **Comprehensive system architecture and implementation guide**\n\n---\n\n## 🎯 **System Overview**\n\n**TacticalOps** is a hybrid tactical operations management platform combining:\n- **🌐 PWA Dashboard** - Next.js 15 + React 19 web application\n- **📱 Mobile App** - React Native + Expo SDK 53 cross-platform app\n- **🎥 LiveKit Streaming** - Real-time video/audio communication\n- **🗺️ Tactical Mapping** - Advanced mapping and collaboration tools\n- **🤖 AI Integration** - Intelligent analytics and automation\n- **🔄 Real-time Sync** - WebSocket-based live data synchronization\n\n---\n\n## 🏛️ **High-Level Architecture**\n\n```mermaid\ngraph TB\n    subgraph \"Client Layer\"\n        PWA[\"🌐 PWA Dashboard<br/>Next.js 15 + React 19\"]\n        Mobile[\"📱 Mobile App<br/>React Native + Expo\"]\n        Web[\"🌍 Web Browser<br/>Progressive Web App\"]\n    end\n    \n    subgraph \"API Gateway\"\n        NextAPI[\"⚡ Next.js API Routes<br/>REST + GraphQL\"]\n        WS[\"🔌 WebSocket Server<br/>Real-time Communication\"]\n        LiveKit[\"🎥 LiveKit Server<br/>Video/Audio Streaming\"]\n    end\n    \n    subgraph \"Core Services\"\n        Auth[\"🔐 Authentication<br/>JWT + bcrypt\"]\n        DB[\"💾 Database<br/>PostgreSQL + Prisma\"]\n        Cache[\"⚡ Redis Cache<br/>Session + Real-time\"]\n        Storage[\"📁 File Storage<br/>Local + Cloud\"]\n    end\n    \n    subgraph \"External Services\"\n        Maps[\"🗺️ Mapbox<br/>Interactive Maps\"]\n        AI[\"🤖 OpenAI<br/>AI Analytics\"]\n        Push[\"🔔 Push Notifications<br/>Web + Mobile\"]\n        UAV[\"🚁 UAV/Drone APIs<br/>MAVLink Protocol\"]\n    end\n    \n    PWA --> NextAPI\n    Mobile --> NextAPI\n    Web --> NextAPI\n    \n    NextAPI --> Auth\n    NextAPI --> DB\n    NextAPI --> Cache\n    NextAPI --> Storage\n    \n    WS --> Auth\n    WS --> Cache\n    \n    LiveKit --> Auth\n    LiveKit --> DB\n    \n    NextAPI --> Maps\n    NextAPI --> AI\n    NextAPI --> Push\n    NextAPI --> UAV\n```"\n## 🔄 
-**Data Flow Architecture**\n\n```mermaid\nsequenceDiagram\n    participant U as User\n    participant PWA as PWA Dashboard\n    participant API as Next.js API\n    participant WS as WebSocket\n    participant LK as LiveKit\n    participant DB as Database\n    participant Mobile as Mobile App\n    \n    U->>PWA: Login\n    PWA->>API: POST /api/auth/login\n    API->>DB: Verify credentials\n    DB-->>API: User data\n    API-->>PWA: JWT token\n    \n    PWA->>WS: Connect with JWT\n    WS->>WS: Authenticate user\n    WS-->>PWA: Connection established\n    \n    U->>PWA: Start video call\n    PWA->>API: POST /api/livekit/token\n    API-->>PWA: LiveKit token\n    PWA->>LK: Connect to room\n    LK-->>PWA: Video/audio stream\n    \n    PWA->>WS: Broadcast event\n    WS->>Mobile: Real-time notification\n    Mobile->>API: Sync data\n    API->>DB: Update status\n```\n\n---\n\n## 📱 **Mobile App Architecture**\n\n```mermaid\ngraph TB\n    subgraph \"React Native App\"\n        App[\"📱 App.tsx<br/>Main Application\"]\n        Services[\"🔧 Services Layer\"]\n        Components[\"🧩 UI Components\"]\n        Navigation[\"🧭 Navigation\"]\n    end\n    \n    subgraph \"Native Services\"\n        Device[\"📱 DeviceService<br/>Hardware Info\"]\n        Location[\"📍 LocationService<br/>GPS Tracking\"]\n        Camera[\"📷 CameraService<br/>Photo/Video\"]\n        Audio[\"🎤 AudioService<br/>Recording\"]\n        Sensor[\"🔬 SensorService<br/>Accelerometer\"]\n        Storage[\"💾 StorageService<br/>Local Data\"]\n        API[\"🌐 ApiService<br/>HTTP Client\"]\n    end\n    \n    subgraph \"Expo SDK 53\"\n        ExpoLocation[\"📍 expo-location\"]\n        ExpoCamera[\"📷 expo-camera\"]\n        ExpoAudio[\"🎤 expo-av\"]\n        ExpoSensors[\"🔬 expo-sensors\"]\n        ExpoNotifications[\"🔔 expo-notifications\"]\n    end\n    \n    App --> Services\n    Services --> Device\n    Services --> Location\n    Services --> Camera\n    Services --> Audio\n    Services --> Sensor\n    Services --> Storage\n    Services --> API\n    \n    Device --> ExpoLocation\n    Location --> ExpoLocation\n    Camera --> ExpoCamera\n    Audio --> ExpoAudio\n    Sensor --> ExpoSensors\n```"\n##
- 🎥 **LiveKit Streaming Architecture**\n\n```mermaid\ngraph TB\n    subgraph \"Frontend Components\"\n        VideoGrid[\"📺 MultiStreamGrid<br/>Video Layout\"]\n        VideoStream[\"🎥 VideoStreamComponent<br/>Individual Stream\"]\n        Controls[\"🎛️ Media Controls<br/>Camera/Mic/Screen\"]\n    end\n    \n    subgraph \"LiveKit Provider\"\n        Provider[\"🔗 LiveKitProvider<br/>React Context\"]\n        Hooks[\"🪝 Custom Hooks<br/>useLiveKit, etc.\"]\n        Manager[\"⚙️ ConnectionManager<br/>Connection Logic\"]\n    end\n    \n    subgraph \"API Layer\"\n        TokenAPI[\"🎫 /api/livekit/token<br/>JWT Generation\"]\n        RoomAPI[\"🏠 /api/livekit/rooms<br/>Room Management\"]\n        ParticipantAPI[\"👥 /api/livekit/participants<br/>User Management\"]\n    end\n    \n    subgraph \"LiveKit Server\"\n        SFU[\"🎛️ SFU Server<br/>Media Routing\"]\n        Rooms[\"🏠 Room Management\"]\n        Tracks[\"📡 Media Tracks\"]\n    end\n    \n    VideoGrid --> Provider\n    VideoStream --> Provider\n    Controls --> Provider\n    \n    Provider --> Hooks\n    Hooks --> Manager\n    \n    Manager --> TokenAPI\n    Manager --> RoomAPI\n    Manager --> ParticipantAPI\n    \n    TokenAPI --> SFU\n    RoomAPI --> Rooms\n    ParticipantAPI --> Tracks\n```\n\n---\n\n## 🔌 **WebSocket Real-time Architecture**\n\n```mermaid\ngraph TB\n    subgraph \"Client Side\"\n        WSClient[\"🔌 WebSocketClient<br/>Connection Manager\"]\n        Hooks[\"🪝 useRealTimeData<br/>React Hooks\"]\n        Components[\"🧩 UI Components<br/>Live Updates\"]\n    end\n    \n    subgraph \"Server Side\"\n        WSServer[\"🔌 WebSocketServer<br/>Connection Pool\"]\n        Auth[\"🔐 JWT Authentication<br/>Token Verification\"]\n        Broadcast[\"📡 Message Broadcasting<br/>Event Distribution\"]\n    end\n    \n    subgraph \"Message Types\"\n        DeviceUpdate[\"📱 Device Status<br/>Real-time Updates\"]\n        LocationUpdate[\"📍 GPS Location<br/>Position Changes\"]\n        Emergency[\"🚨 Emergency Alerts<br/>Priority Messages\"]\n        Chat[\"💬 Team Chat<br/>Communication\"]\n    end\n    \n    Components --> Hooks\n    Hooks --> WSClient\n    WSClient <--> WSServer\n    \n    WSServer --> Auth\n    WSServer --> Broadcast\n    \n    Broadcast --> DeviceUpdate\n    Broadcast --> LocationUpdate\n    Broadcast --> Emergency\n    Broadcast --> Chat\n```"
+# 🏗️ TacticalOps Project Architecture
+
+## 📋 **System Overview**
+
+TacticalOps is a **hybrid multi-platform tactical operations management system** with a sophisticated multi-database architecture optimized for performance, reliability, and offline capabilities.
+
+### 🎯 **Core Architecture Principles**
+
+1. **Hybrid Multi-Database**: Supabase Cloud + PostgreSQL Container + SQLite Mobile
+2. **Offline-First Mobile**: React Native with local SQLite synchronization
+3. **Real-Time Web Platform**: Next.js with Supabase real-time subscriptions
+4. **Tactical Theme**: Desert/Forest camo with Arabic/English RTL support
+5. **Production-Ready**: Docker containerization with health monitoring
+
+## 🏗️ **System Architecture Diagram**
+
+```mermaid
+graph TB
+    subgraph "User Interfaces"
+        WEB[Web Dashboard<br/>Next.js 15 + React 19]
+        MOBILE[Mobile App<br/>Expo React Native]
+        PWA[Progressive Web App<br/>Offline Capable]
+    end
+    
+    subgraph "API Layer"
+        API[Next.js API Routes<br/>TypeScript + Prisma]
+        AUTH[Authentication<br/>JWT + bcrypt]
+        RT[Real-time<br/>WebSockets + SSE]
+    end
+    
+    subgraph "Database Layer"
+        SB[(Supabase Cloud<br/>PostgreSQL Primary)]
+        PG[(PostgreSQL Container<br/>VPS Backup)]
+        REDIS[(Redis Container<br/>Cache + Sessions)]
+        SQLITE[(SQLite Mobile<br/>Offline Storage)]
+    end
+    
+    subgraph "Infrastructure"
+        DOCKER[Docker Containers<br/>VPS Deployment]
+        NGINX[Nginx Proxy<br/>SSL + Load Balancing]
+        MONITOR[Health Monitoring<br/>Logging + Metrics]
+    end
+    
+    WEB --> API
+    MOBILE --> API
+    PWA --> API
+    
+    API --> AUTH
+    API --> RT
+    API --> SB
+    API --> PG
+    API --> REDIS
+    
+    MOBILE --> SQLITE
+    SQLITE --> API
+    
+    API --> DOCKER
+    DOCKER --> NGINX
+    DOCKER --> MONITOR
+    
+    classDef ui fill:#e3f2fd
+    classDef api fill:#f3e5f5
+    classDef db fill:#e8f5e8
+    classDef infra fill:#fff3e0
+    
+    class WEB,MOBILE,PWA ui
+    class API,AUTH,RT api
+    class SB,PG,REDIS,SQLITE db
+    class DOCKER,NGINX,MONITOR infra
+```
+
+## 🗄️ **Database Architecture**
+
+### **Multi-Database Strategy**
+
+```mermaid
+graph LR
+    subgraph "Production Flow"
+        APP[Next.js App]
+        SB[Supabase Cloud<br/>Primary DB]
+        PG[PostgreSQL Container<br/>Backup DB]
+        REDIS[Redis<br/>Cache]
+    end
+    
+    subgraph "Mobile Flow"
+        MOBILE[Expo App]
+        SQLITE[SQLite<br/>Local DB]
+        SYNC[Sync Manager]
+    end
+    
+    APP --> SB
+    APP --> PG
+    APP --> REDIS
+    
+    MOBILE --> SQLITE
+    SQLITE --> SYNC
+    SYNC --> APP
+    
+    SB -.-> PG
+    PG -.-> SB
+```
+
+### **Database Roles**
+
+| Database | Role | Usage | Features |
+|----------|------|-------|----------|
+| **Supabase Cloud** | Primary Production | Web platform, real-time sync, analytics | RLS, Auth, Real-time, Backups |
+| **PostgreSQL Container** | Backup & Networking | Local backup, provisioning, offline ops | Full PostgreSQL, PostGIS, Custom extensions |
+| **Redis Container** | Cache & Sessions | High-performance caching, session storage | In-memory, Persistence, Clustering |
+| **SQLite Mobile** | Mobile Local | Offline-first mobile, local caching | Embedded, Zero-config, Cross-platform |
+
+## 🚀 **Technology Stack**
+
+### **Frontend Technologies**
+
+#### **Web Dashboard (Administrators)**
+```yaml
+Framework: Next.js 15 (App Router)
+React: 19.1.0 (Server Components)
+Language: TypeScript 5
+UI Library: ShadCN/UI + Tailwind CSS
+Theme: Tactical Camo (Desert/Forest)
+Icons: Lucide React
+Internationalization: Arabic/English RTL
+PWA: Service Workers + Offline Support
+```
+
+#### **Mobile Application (Field Users)**
+```yaml
+Framework: Expo SDK 53
+React Native: Latest with New Architecture
+Language: TypeScript 5
+Database: SQLite (Offline-first)
+Synchronization: Background sync with API
+Maps: React Native Maps + Mapbox
+Camera: Expo Camera + Media Library
+Location: Expo Location (High accuracy)
+Notifications: Expo Notifications
+```
+
+### **Backend Technologies**
+
+#### **API & Server**
+```yaml
+Framework: Next.js 15 API Routes
+Database ORM: Prisma (Multi-provider)
+Authentication: JWT + bcrypt
+Real-time: WebSockets + Server-Sent Events
+Caching: Redis with persistence
+Security: CORS, CSRF, Rate limiting
+Validation: Zod + TypeScript
+```
+
+#### **Database Stack**
+```yaml
+Primary: Supabase Cloud PostgreSQL 15
+Backup: PostgreSQL 15 Container
+Cache: Redis 7 Container
+Mobile: SQLite 3 (Latest)
+Schema: Prisma unified schema
+Migrations: Prisma migrations
+```
+
+### **Infrastructure**
+
+#### **Containerization**
+```yaml
+Platform: Docker + Docker Compose
+Base Images: Node 18 Alpine, PostgreSQL 15, Redis 7
+Orchestration: Docker Compose with health checks
+Networking: Custom bridge network
+Volumes: Persistent data storage
+```
+
+#### **Deployment**
+```yaml
+VPS: Ubuntu 22.04 LTS
+Proxy: Nginx with SSL termination
+SSL: Let's Encrypt certificates
+Monitoring: Docker health checks
+Logging: Structured JSON logging
+Backup: Automated database backups
+```
+
+## 🎨 **UI/UX Design System**
+
+### **Tactical Theme**
+```yaml
+Primary Colors:
+  - Desert Camo: Amber/Brown gradients
+  - Forest Camo: Green/Brown gradients
+  - Accent: Amber (#F59E0B)
+  - Text: High contrast white/amber
+  
+Background Patterns:
+  - Radial gradients simulating camo
+  - Tactical grid overlays
+  - Glass morphism effects
+  - Backdrop blur for depth
+```
+
+### **Internationalization**
+```yaml
+Languages: English (LTR) + Arabic (RTL)
+Implementation: React Context + JSON files
+RTL Support: CSS logical properties
+Font Loading: Optimized web fonts
+Dynamic Switching: Runtime language toggle
+```
+
+## 🔄 **Data Flow Architecture**
+
+### **Web Platform Data Flow**
+```mermaid
+sequenceDiagram
+    participant User as Web User
+    participant App as Next.js App
+    participant Redis as Redis Cache
+    participant SB as Supabase Cloud
+    participant PG as PostgreSQL Backup
+    
+    User->>App: Request Data
+    App->>Redis: Check Cache
+    
+    alt Cache Hit
+        Redis-->>App: Return Cached Data
+    else Cache Miss
+        App->>SB: Query Primary DB
+        SB-->>App: Return Data
+        App->>Redis: Update Cache
+        App->>PG: Sync to Backup
+    end
+    
+    App-->>User: Return Response
+```
+
+### **Mobile Synchronization Flow**
+```mermaid
+sequenceDiagram
+    participant Mobile as Mobile App
+    participant SQLite as Local SQLite
+    participant API as Next.js API
+    participant SB as Supabase Cloud
+    
+    Note over Mobile,SB: Offline Operation
+    Mobile->>SQLite: Store Data Locally
+    SQLite->>Mobile: Immediate Response
+    
+    Note over Mobile,SB: Background Sync
+    Mobile->>API: Sync Queue Data
+    API->>SB: Update Cloud DB
+    SB-->>API: Confirm Update
+    API-->>Mobile: Sync Complete
+    Mobile->>SQLite: Update Local Status
+```
+
+## 🛡️ **Security Architecture**
+
+### **Authentication & Authorization**
+```yaml
+Web Authentication:
+  - JWT tokens with secure cookies
+  - bcrypt password hashing (12 rounds)
+  - Session management via Redis
+  - Role-based access control (ADMIN/USER)
+
+Mobile Authentication:
+  - Secure token storage
+  - Biometric authentication support
+  - Certificate pinning
+  - Offline authentication cache
+
+API Security:
+  - CORS configuration
+  - Rate limiting (1000 req/hour)
+  - Input validation (Zod schemas)
+  - SQL injection prevention (Prisma)
+```
+
+### **Data Protection**
+```yaml
+Encryption:
+  - HTTPS/TLS 1.3 for all communications
+  - Database encryption at rest
+  - JWT token encryption
+  - Sensitive data field encryption
+
+Privacy:
+  - Row Level Security (Supabase)
+  - Data anonymization options
+  - GDPR compliance ready
+  - Audit logging
+```
+
+## 📊 **Performance Optimization**
+
+### **Caching Strategy**
+```yaml
+L1 Cache: Redis (1-60 seconds)
+  - API responses
+  - Session data
+  - Real-time updates
+
+L2 Cache: PostgreSQL (1-60 minutes)
+  - Computed aggregations
+  - Materialized views
+  - Query result cache
+
+L3 Cache: Supabase (1-24 hours)
+  - Static reference data
+  - User preferences
+  - Configuration data
+
+L4 Cache: SQLite Mobile (Persistent)
+  - Offline data
+  - User-specific cache
+  - Media files
+```
+
+### **Performance Metrics**
+```yaml
+Web Platform:
+  - First Load: < 2 seconds
+  - API Response: < 100ms average
+  - Real-time Updates: < 50ms latency
+
+Mobile Application:
+  - App Launch: < 1 second
+  - Offline Operations: Instant
+  - Sync Completion: < 5 seconds
+
+Database Performance:
+  - Query Response: < 10ms average
+  - Connection Pool: 20 connections
+  - Cache Hit Rate: > 90%
+```
+
+## 🚀 **Deployment Architecture**
+
+### **Production Environment**
+```yaml
+VPS Configuration:
+  - Ubuntu 22.04 LTS
+  - 4 CPU cores, 8GB RAM
+  - 100GB SSD storage
+  - Docker + Docker Compose
+
+Container Resources:
+  - Next.js App: 1GB RAM, 1 CPU
+  - PostgreSQL: 512MB RAM, 0.5 CPU
+  - Redis: 256MB RAM, 0.25 CPU
+
+Network Configuration:
+  - Nginx reverse proxy
+  - SSL termination
+  - Custom bridge network
+  - Health check endpoints
+```
+
+### **Monitoring & Logging**
+```yaml
+Health Monitoring:
+  - Container health checks
+  - API endpoint monitoring
+  - Database connection monitoring
+  - Redis connectivity checks
+
+Logging Strategy:
+  - Structured JSON logs
+  - Log rotation and retention
+  - Error tracking and alerting
+  - Performance metrics collection
+```
+
+## 🎯 **Development Workflow**
+
+### **Local Development**
+```bash
+# Start development environment
+cd modern-dashboard && npm run dev
+
+# Start mobile development
+cd react-native-app && npx expo start
+
+# Database operations
+npm run db:push      # Push schema changes
+npm run db:studio    # Open Prisma Studio
+npm run db:migrate   # Run migrations
+```
+
+### **Production Deployment**
+```bash
+# Deploy with Supabase architecture
+./deploy-supabase-architecture.sh
+
+# Manual deployment steps
+docker-compose -f docker-compose.vps-fixed.yml up -d
+```
+
+## 📱 **Mobile Application Architecture**
+
+### **Offline-First Strategy**
+```yaml
+Data Storage:
+  - SQLite for local persistence
+  - Encrypted sensitive data
+  - Optimized queries with indexes
+
+Synchronization:
+  - Background sync with exponential backoff
+  - Conflict resolution (last-write-wins)
+  - Batch operations for efficiency
+  - Network-aware sync scheduling
+
+Native Features:
+  - GPS location tracking
+  - Camera and media capture
+  - Push notifications
+  - Biometric authentication
+  - Background processing
+```
+
+---
+
+## 🎯 **Key Architectural Decisions**
+
+### **Why This Architecture?**
+
+1. **Supabase Cloud Primary**: Production-grade PostgreSQL with real-time features
+2. **PostgreSQL Container Backup**: Local redundancy and network isolation
+3. **Redis Caching**: High-performance session and data caching
+4. **SQLite Mobile**: Offline-first mobile experience with zero configuration
+5. **Next.js Full-Stack**: Modern React framework with API routes
+6. **Docker Containers**: Consistent deployment and scaling
+7. **Tactical Theme**: Military-grade UI with Arabic/English support
+
+### **Scalability Considerations**
+
+- **Horizontal Scaling**: Load balancer ready with multiple app instances
+- **Database Scaling**: Supabase handles scaling automatically
+- **Cache Scaling**: Redis clustering support for high availability
+- **Mobile Scaling**: Offline-first reduces server load
+- **CDN Ready**: Static assets optimized for global distribution
+
+---
+
+*Architecture documented: August 15, 2025*
+*Version: 2.0.0 - Hybrid Multi-Database Tactical Platform*
