@@ -1,4 +1,4 @@
-// Android Agent Database Schema - PostgreSQL Version
+// Android Agent Database Schema - PostgreSQL Version (Supabase Cloud)
 generator client {
   provider = "prisma-client-js"
 }

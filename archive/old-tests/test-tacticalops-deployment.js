@@ -5,9 +5,9 @@ const http = require('http');
 
 // Test configuration
 const CONFIG = {
-    baseUrl: 'https://tacticalops.ta.consulting.sa',
-    httpsUrl: 'https://tacticalops.ta.consulting.sa',
-    httpUrl: 'http://tacticalops.ta.consulting.sa',
+    baseUrl: 'https://tac.consulting.sa',
+    httpsUrl: 'https://tac.consulting.sa',
+    httpUrl: 'http://tac.consulting.sa',
     localUrl: 'http://127.0.0.1:3020',
     testTimeout: 30000,
     credentials: {

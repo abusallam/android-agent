@@ -123,7 +123,7 @@ test.describe('Security Tests', () => {
 
   test('HTTPS redirect', async ({ page }) => {
     // This test would check HTTPS redirect if SSL is configured
-    await page.goto('https://tacticalops.ta.consulting.sa');
+    await page.goto('https://tac.consulting.sa');
     await expect(page).toHaveURL(/^https?:\/\//);
   });
 

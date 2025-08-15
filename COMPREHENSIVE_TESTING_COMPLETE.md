@@ -17,7 +17,7 @@
 ## ✅ **Domain Migration Complete**
 
 ### **New Domain Configuration**
-- **Old Domain**: tacticalops.ta.consulting.sa
+- **Old Domain**: tacticalops.ta.consulting.sa (deprecated)
 - **New Domain**: `tac.consulting.sa` ✅
 - **SSL Certificate**: Updated and includes new domain
 - **Nginx Configuration**: Updated and tested

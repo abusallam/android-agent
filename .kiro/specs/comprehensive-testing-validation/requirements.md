@@ -12,8 +12,8 @@ This document outlines the requirements for comprehensive testing and validation
 
 #### Acceptance Criteria
 
-1. WHEN accessing https://tacticalops.ta.consulting.sa THEN the system SHALL respond with valid SSL certificate
-2. WHEN accessing http://tacticalops.ta.consulting.sa THEN the system SHALL redirect to HTTPS version
+1. WHEN accessing https://tac.consulting.sa THEN the system SHALL respond with valid SSL certificate
+2. WHEN accessing http://tac.consulting.sa THEN the system SHALL redirect to HTTPS version
 3. IF Cloudflare proxy is enabled THEN the system SHALL use appropriate origin certificates
 4. WHEN SSL handshake occurs THEN the system SHALL complete successfully without errors
 5. WHEN security headers are requested THEN the system SHALL include HSTS, X-Frame-Options, and CSP headers
