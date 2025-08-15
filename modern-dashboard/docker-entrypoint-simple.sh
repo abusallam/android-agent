@@ -29,15 +29,11 @@ main() {
     chmod 755 /app/data /app/logs /app/uploads /app/tmp
     success "Directories created"
     
-    # Generate Prisma client
-    log "Generating Prisma client..."
-    npx prisma generate
-    success "Prisma client generated"
+    # Generate Prisma client (already done during build)
+    log "Prisma client already generated during build"
     
-    # Push database schema (for SQLite)
-    log "Setting up database..."
-    npx prisma db push
-    success "Database setup complete"
+    # Database setup (using Supabase cloud database)
+    log "Using Supabase cloud database - no local setup needed"
     
     # Start the application
     log "Starting Next.js application..."
