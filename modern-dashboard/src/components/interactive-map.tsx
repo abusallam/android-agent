@@ -86,7 +86,7 @@ export function InteractiveMap() {
               <MapPin className="h-6 w-6 text-white" />
             </div>
             Live Location Tracking
-            <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Loading</Badge>
+            <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">Loading</Badge>
           </CardTitle>
           <CardDescription className="text-blue-200/80">
             Loading interactive map...
