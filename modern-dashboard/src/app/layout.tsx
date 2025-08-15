@@ -3,7 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/theme-provider";
-import { LiveKitProvider } from "@/components/streaming/LiveKitProvider";
+// Temporarily disabled LiveKit provider
+// import { LiveKitProvider } from "@/components/streaming/LiveKitProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -34,9 +35,7 @@ export default function RootLayout({
       <body className={`${inter.className} antialiased`}>
         <ThemeProvider defaultTheme="dark" storageKey="android-agent-theme">
           <AuthProvider>
-            <LiveKitProvider>
-              {children}
-            </LiveKitProvider>
+            {children}
           </AuthProvider>
         </ThemeProvider>
       </body>

@@ -28,7 +28,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { LogoWithText } from "@/components/logo";
 import { InteractiveMap } from "@/components/interactive-map";
 import { EmergencyButton } from "@/components/emergency-button";
-import { useLiveKit } from "@/components/streaming/LiveKitProvider";
+// import { useLiveKit } from "@/components/streaming/LiveKitProvider";
 import { useEffect, useState } from "react";
 
 interface DeviceData {
@@ -68,7 +68,10 @@ interface DashboardData {
 
 export default function DashboardContent() {
   const { logout } = useAuth();
-  const { startVideoCall, startAudioCall, startScreenShare, startEmergencyCall, isConnecting, error } = useLiveKit();
+  // Temporarily disabled LiveKit functionality
+  // const { startVideoCall, startAudioCall, startScreenShare, startEmergencyCall, isConnecting, error } = useLiveKit();
+  const isConnecting = false;
+  const error = null;
   const [dashboardData, setDashboardData] = useState<DashboardData>({
     devices: { total: 0, online: 0, offline: 0, list: [] },
     stats: { avgBattery: 85, gpsAccuracy: "±5m", networkStatus: "4G/WiFi", alerts: 2 }
@@ -212,7 +215,7 @@ export default function DashboardContent() {
               <Button 
                 className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white border-0 h-14 text-base font-semibold"
                 disabled={isConnecting}
-                onClick={() => startVideoCall('demo-device-1')}
+                onClick={() => console.log('Video call feature coming soon')}
               >
                 <Video className="mr-3 h-5 w-5" />
                 {isConnecting ? 'Connecting...' : 'Video Call'}
@@ -220,7 +223,7 @@ export default function DashboardContent() {
               <Button 
                 className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 h-14 text-base font-semibold"
                 disabled={isConnecting}
-                onClick={() => startAudioCall('demo-device-1')}
+                onClick={() => console.log('Audio call feature coming soon')}
               >
                 <Phone className="mr-3 h-5 w-5" />
                 {isConnecting ? 'Connecting...' : 'Audio Call'}
@@ -228,7 +231,7 @@ export default function DashboardContent() {
               <Button 
                 className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white border-0 h-14 text-base font-semibold"
                 disabled={isConnecting}
-                onClick={() => startScreenShare('demo-device-1')}
+                onClick={() => console.log('Screen share feature coming soon')}
               >
                 <Monitor className="mr-3 h-5 w-5" />
                 {isConnecting ? 'Connecting...' : 'Screen Share'}
@@ -236,7 +239,7 @@ export default function DashboardContent() {
               <Button 
                 className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white border-0 h-16 text-lg font-bold shadow-lg transform hover:scale-105 transition-all duration-200"
                 disabled={isConnecting}
-                onClick={() => startEmergencyCall('demo-device-1')}
+                onClick={() => console.log('Emergency call feature coming soon')}
               >
                 <AlertTriangle className="mr-3 h-6 w-6" />
                 {isConnecting ? 'Connecting...' : 'EMERGENCY'}
