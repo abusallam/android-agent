@@ -37,7 +37,7 @@ main() {
     
     # Start the application
     log "Starting Next.js application..."
-    exec npm start
+    exec node server.js
 }
 
 # Run main function
