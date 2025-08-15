@@ -12,7 +12,7 @@ const FALLBACK_ADMIN = {
   email: 'admin@tacticalops.local',
   role: 'ADMIN',
   // Pre-hashed password for 'admin123'
-  passwordHash: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBVJ3fEBXppqyG'
+  passwordHash: '$2b$12$b.Cgo9WAdz4QA0Ve7Lu81.SEYBrRC.MMgFFjIRAUINR16GDDveZJK'
 };
 
 export async function POST(request: NextRequest) {
