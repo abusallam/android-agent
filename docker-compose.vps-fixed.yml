@@ -11,6 +11,8 @@ services:
         - BUILD_VERSION=${BUILD_VERSION:-2.0.0}
     image: tacticalops/platform:${BUILD_VERSION:-latest}
     container_name: tacticalops-app
+    env_file:
+      - .env.production
     environment:
       - NODE_ENV=production
       - PORT=3000
