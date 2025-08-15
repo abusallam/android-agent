@@ -17,10 +17,10 @@ services:
       - NODE_ENV=production
       - PORT=3000
       # Primary Database: Supabase Cloud PostgreSQL
-      - SUPABASE_DATABASE_URL=${SUPABASE_DATABASE_URL}
-      - SUPABASE_URL=${SUPABASE_URL}
-      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
-      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - SUPABASE_DATABASE_URL=postgresql://postgres.wtsqexbdrnptxyasapik:aMB3JIygD9nR6qLm@aws-1-eu-north-1.pooler.supabase.com:6543/postgres
+      - SUPABASE_URL=https://wtsqexbdrnptxyasapik.supabase.co
+      - SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0c3FleGJkcm5wdHh5YXNhcGlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUyOTIxMTksImV4cCI6MjA3MDg2ODExOX0.SNyjVM2rOsmAeLWXxrGLooQzU3H4JvpLUvoBqbo-ex8
+      - SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0c3FleGJkcm5wdHh5YXNhcGlrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTI5MjExOSwiZXhwIjoyMDcwODY4MTE5fQ.lkD1NvPaa_mShPv0_9uPYuBNXRcHg2RCL3MHrBvEM7U
       # Backup Database: PostgreSQL Container
       - POSTGRES_BACKUP_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@tacticalops-postgres:5432/${POSTGRES_DB}
       # Cache & Sessions: Redis
