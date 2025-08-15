@@ -3,7 +3,7 @@
 # Debug TacticalOps Deployment Issues
 VPS_HOST="217.79.255.54"
 VPS_USER="root"
-DOMAIN="tacticalops.ta.consulting.sa"
+DOMAIN="tac.consulting.sa"
 
 # Function to execute commands on VPS
 vps_exec() {

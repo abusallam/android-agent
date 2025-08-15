@@ -8,7 +8,7 @@ set -e
 # Configuration
 VPS_HOST="217.79.255.54"
 VPS_USER="root"
-DOMAIN="tacticalops.ta.consulting.sa"
+DOMAIN="tac.consulting.sa"
 VPS_PROJECT_DIR="/opt/tacticalops"
 LOCAL_ENV_FILE=".env.production"
 

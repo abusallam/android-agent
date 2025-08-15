@@ -7,7 +7,7 @@ set -e
 
 VPS_HOST="217.79.255.54"
 VPS_USER="root"
-DOMAIN="tacticalops.ta.consulting.sa"
+DOMAIN="tac.consulting.sa"
 
 echo "🔧 Complete TacticalOps SSL and Deployment Fix"
 echo "=============================================="

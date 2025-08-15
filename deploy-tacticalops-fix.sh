@@ -3,7 +3,7 @@
 # Deploy TacticalOps with Latest Fixes
 VPS_HOST="217.79.255.54"
 VPS_USER="root"
-DOMAIN="tacticalops.ta.consulting.sa"
+DOMAIN="tac.consulting.sa"
 VPS_PROJECT_DIR="/opt/tacticalops"
 
 # Function to execute commands on VPS

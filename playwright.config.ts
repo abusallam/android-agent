@@ -9,7 +9,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: 'https://tacticalops.ta.consulting.sa',
+    baseURL: 'https://tac.consulting.sa',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
