@@ -232,7 +232,7 @@ show_deployment_info() {
     echo "  View logs:        docker-compose logs -f"
     echo "  Stop services:    docker-compose down"
     echo "  Restart:          docker-compose restart"
-    echo "  Update:           ./deploy.sh"
+    echo "  Update:           ./scripts/deploy.sh"
     echo ""
     echo "📱 Mobile Testing:"
     echo "  1. Find your computer's IP address"

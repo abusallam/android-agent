@@ -23,7 +23,7 @@
     - Test user creation with proper bcrypt hashing
     - _Requirements: 2.1, 2.2, 4.3, 4.4_
 
-  - [-] 2.3 Fix authentication API endpoints
+  - [x] 2.3 Fix authentication API endpoints
     - Debug /api/auth/login endpoint functionality
     - Ensure proper password verification with bcrypt
     - Fix JWT token generation and validation
@@ -31,21 +31,21 @@
     - _Requirements: 2.1, 2.2, 2.3, 6.1_
 
 - [ ] 3. Fix Multi-language Support (Arabic/English)
-  - [ ] 3.1 Debug language switching functionality
+  - [x] 3.1 Debug language switching functionality
     - Check i18n context provider setup and state management
     - Verify Arabic translation files are loaded correctly
     - Fix language switcher component event handlers
     - Test language persistence across page refreshes
     - _Requirements: 3.1, 3.2, 3.5_
 
-  - [ ] 3.2 Implement proper RTL support
+  - [x] 3.2 Implement proper RTL support
     - Add RTL CSS classes and direction switching
     - Update layout components to support right-to-left
     - Test Arabic text rendering and layout
     - Verify UI components work correctly in RTL mode
     - _Requirements: 3.3, 3.4_
 
-  - [ ] 3.3 Verify and complete Arabic translations
+  - [x] 3.3 Verify and complete Arabic translations
     - Check all translation keys have Arabic equivalents
     - Test translation loading and rendering
     - Fix any missing or broken translation strings
@@ -106,7 +106,7 @@
     - _Requirements: 7.5, 6.5_
 
 - [ ] 7. Production Validation and Testing
-  - [ ] 7.1 Run comprehensive test suite against production
+  - [-] 7.1 Run comprehensive test suite against production
     - Execute all Playwright tests against live site
     - Verify tactical theme displays correctly
     - Test admin login functionality works

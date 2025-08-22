@@ -10,37 +10,36 @@ export async function initializeDatabase() {
   try {
     console.log('🔧 Initializing database...');
 
-    // Check if ROOT_ADMIN exists
-    const rootAdmin = await prisma.user.findFirst({
-      where: { role: 'ROOT_ADMIN' }
+    // Check if ADMIN exists
+    const adminUser = await prisma.user.findFirst({
+      where: { role: 'ADMIN' }
     });
 
-    if (!rootAdmin) {
-      console.log('👑 Creating ROOT_ADMIN user...');
+    if (!adminUser) {
+      console.log('👑 Creating ADMIN user...');
       
-      // Create default ROOT_ADMIN user
+      // Create default ADMIN user
       const hashedPassword = await hashPassword('admin123');
       
-      const newRootAdmin = await prisma.user.create({
+      const newAdmin = await prisma.user.create({
         data: {
           username: 'admin',
           password: hashedPassword,
           email: 'admin@androidagent.local',
-          role: 'ROOT_ADMIN',
-          isActive: true
+          role: 'ADMIN'
         }
       });
 
-      console.log('✅ ROOT_ADMIN user created successfully');
+      console.log('✅ ADMIN user created successfully');
       console.log('📋 Default credentials:');
       console.log('   Username: admin');
       console.log('   Password: admin123');
       console.log('   ⚠️  Please change the default password after first login!');
       
-      return newRootAdmin;
+      return newAdmin;
     } else {
-      console.log('✅ ROOT_ADMIN user already exists');
-      return rootAdmin;
+      console.log('✅ ADMIN user already exists');
+      return adminUser;
     }
 
   } catch (error) {

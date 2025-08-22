@@ -3,6 +3,7 @@
 ## 🎯 **Current Status: READY FOR APK BUILD**
 
 ### ✅ **Completed Implementation**
+
 - **ATAK-inspired tactical features** with Leaflet + LiveKit
 - **Security & Permission Management** with expo-secure-store
 - **Location Services** with geofencing and background tracking
@@ -15,6 +16,7 @@
 ## 🔑 **API Keys Required (Priority Order)**
 
 ### **🔥 ESSENTIAL (Must Have)**
+
 ```bash
 # 1. JWT Secret (generate one)
 JWT_SECRET=your_jwt_secret_here_minimum_32_characters
@@ -24,6 +26,7 @@ EXPO_ACCESS_TOKEN=your_expo_access_token_here
 ```
 
 ### **⚡ RECOMMENDED (Enhanced Features)**
+
 ```bash
 # 3. LiveKit Cloud (for streaming)
 LIVEKIT_URL=wss://your-project.livekit.cloud
@@ -36,6 +39,7 @@ EXPO_PUBLIC_WS_URL=ws://your-server.com:3000
 ```
 
 ### **💡 OPTIONAL (Nice to Have)**
+
 ```bash
 # 5. Google Maps (enhanced mobile maps)
 EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
@@ -49,12 +53,14 @@ EXPO_PUBLIC_PUSH_TOKEN=ExponentPushToken[your_push_token]
 ## 🚀 **APK Build Options**
 
 ### **Option 1: Expo Cloud Build (Recommended)**
+
 ```bash
 # Quick cloud build
-./build-apk.sh
+./scripts/build-apk.sh
 ```
 
 **Advantages:**
+
 - ✅ No local Android SDK required
 - ✅ Consistent build environment
 - ✅ Automatic signing and optimization
@@ -62,12 +68,14 @@ EXPO_PUBLIC_PUSH_TOKEN=ExponentPushToken[your_push_token]
 - ✅ Easy sharing via download links
 
 ### **Option 2: Local Build**
+
 ```bash
 # Local build (requires Android SDK)
-./build-apk-local.sh
+./scripts/build-apk-local.sh
 ```
 
 **Advantages:**
+
 - ✅ Full control over build process
 - ✅ No dependency on cloud services
 - ✅ Faster iteration for development
@@ -78,12 +86,15 @@ EXPO_PUBLIC_PUSH_TOKEN=ExponentPushToken[your_push_token]
 ## 📋 **Step-by-Step APK Generation**
 
 ### **Step 1: Set Up API Keys**
+
 1. **Generate JWT Secret:**
+
    ```bash
    node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
    ```
 
 2. **Get Expo Access Token:**
+
    ```bash
    npm install -g @expo/cli
    expo login
@@ -100,6 +111,7 @@ EXPO_PUBLIC_PUSH_TOKEN=ExponentPushToken[your_push_token]
 ### **Step 2: Choose Build Method**
 
 #### **Cloud Build (Recommended):**
+
 ```bash
 # Install EAS CLI
 npm install -g eas-cli
@@ -112,6 +124,7 @@ expo login
 ```
 
 #### **Local Build:**
+
 ```bash
 # Ensure Android SDK is installed
 export ANDROID_HOME=/path/to/android-sdk
@@ -121,6 +134,7 @@ export ANDROID_HOME=/path/to/android-sdk
 ```
 
 ### **Step 3: Install APK**
+
 ```bash
 # Install on connected device
 adb install android-agent-tactical.apk
@@ -133,6 +147,7 @@ adb install android-agent-tactical.apk
 ## 🏗️ **Build Profiles Available**
 
 ### **Preview Build (Testing)**
+
 - **Purpose**: Testing and development
 - **Output**: APK file
 - **Signing**: Debug signing
@@ -140,6 +155,7 @@ adb install android-agent-tactical.apk
 - **Command**: `eas build --platform android --profile preview`
 
 ### **Production Build (Release)**
+
 - **Purpose**: Production deployment
 - **Output**: APK file
 - **Signing**: Release signing
@@ -147,6 +163,7 @@ adb install android-agent-tactical.apk
 - **Command**: `eas build --platform android --profile production`
 
 ### **Production AAB (Play Store)**
+
 - **Purpose**: Google Play Store submission
 - **Output**: AAB file
 - **Signing**: Release signing
@@ -158,6 +175,7 @@ adb install android-agent-tactical.apk
 ## 📱 **App Features Included**
 
 ### **✅ Tactical Mapping**
+
 - Leaflet-based tactical maps
 - Real-time device tracking
 - Geofencing with alerts
@@ -165,6 +183,7 @@ adb install android-agent-tactical.apk
 - Multiple map layers (Street/Satellite/Terrain)
 
 ### **✅ Communication**
+
 - LiveKit video/audio streaming
 - Real-time data channels
 - Emergency broadcasting
@@ -172,6 +191,7 @@ adb install android-agent-tactical.apk
 - Mesh networking support
 
 ### **✅ Security**
+
 - Secure storage with encryption
 - Comprehensive permission management
 - JWT authentication
@@ -179,6 +199,7 @@ adb install android-agent-tactical.apk
 - Audit logging
 
 ### **✅ Location Services**
+
 - High-precision GPS tracking
 - Background location monitoring
 - Geofence detection
@@ -190,6 +211,7 @@ adb install android-agent-tactical.apk
 ## 🔧 **Build Configuration**
 
 ### **App Details**
+
 - **Name**: Android Agent AI - Tactical
 - **Package**: com.androidagent.tactical
 - **Version**: 1.0.0
@@ -197,6 +219,7 @@ adb install android-agent-tactical.apk
 - **Min SDK**: Android 7.0 (API 24)
 
 ### **Permissions Included**
+
 - Location (foreground & background)
 - Camera & Microphone
 - Storage & Media Library
@@ -206,6 +229,7 @@ adb install android-agent-tactical.apk
 - Sensors & Device Info
 
 ### **Features**
+
 - New Architecture (Fabric + Turbo Modules)
 - Edge-to-edge display support
 - Dark theme optimized
@@ -239,8 +263,11 @@ This will create a functional APK with basic features. You can add more API keys
 ## 📊 **Expected Build Results**
 
 ### **APK Size**: ~40-50MB
+
 ### **Build Time**: 10-15 minutes (cloud) / 5-10 minutes (local)
+
 ### **Compatibility**: Android 7.0+ (API 24+)
+
 ### **Architecture**: ARM64, ARMv7, x86_64
 
 ---
@@ -248,6 +275,7 @@ This will create a functional APK with basic features. You can add more API keys
 ## 🎉 **What You'll Get**
 
 A fully functional **ATAK-inspired tactical awareness app** with:
+
 - 🗺️ **Professional tactical mapping**
 - 📡 **Real-time team communication**
 - 🛡️ **Advanced geofencing & alerts**
@@ -259,4 +287,4 @@ A fully functional **ATAK-inspired tactical awareness app** with:
 
 ---
 
-*APK Generation Guide - August 7, 2025*
+_APK Generation Guide - August 7, 2025_

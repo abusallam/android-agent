@@ -16,7 +16,7 @@ NC='\033[0m' # No Color
 
 # Step 1: Context 7 AI Code Analysis
 echo -e "\n${PURPLE}🤖 Running Context 7 AI Code Analysis...${NC}"
-node analyze-code-context7.js
+node scripts/analyze-code-context7.js
 
 # Step 2: Start server and run Playwright tests
 echo -e "\n${BLUE}🎭 Starting Playwright Automated Testing...${NC}"

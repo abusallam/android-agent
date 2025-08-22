@@ -1,9 +1,17 @@
 #!/usr/bin/env node
 
-const { PrismaClient } = require('@prisma/client');
-const bcrypt = require('bcryptjs');
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
+
+// Run the initialization if this file is the main program
+if (import.meta.main) {
+  initializeDatabase().catch((error) => {
+    console.error('❌ Database initialization failed:', error);
+    process.exit(1);
+  });
+}
 
 async function initializeDatabase() {
   try {
@@ -12,7 +20,7 @@ async function initializeDatabase() {
 
     // Check if ROOT_ADMIN exists
     const rootAdmin = await prisma.user.findFirst({
-      where: { role: 'ROOT_ADMIN' }
+      where: { role: 'ADMIN' }
     });
 
     if (!rootAdmin) {
@@ -26,8 +34,7 @@ async function initializeDatabase() {
           username: 'admin',
           password: hashedPassword,
           email: 'admin@androidagent.local',
-          role: 'ROOT_ADMIN',
-          isActive: true
+          role: 'ADMIN',
         }
       });
 
@@ -59,9 +66,6 @@ async function initializeDatabase() {
     console.log('   4. Test React Native app connection');
     console.log('');
 
-  } catch (error) {
-    console.error('❌ Database initialization failed:', error);
-    process.exit(1);
   } finally {
     await prisma.$disconnect();
   }
@@ -72,8 +76,12 @@ async function createSampleData() {
     console.log('📊 Creating sample data...');
 
     // Check if we already have sample devices
-    const deviceCount = await prisma.device.count();
-    
+    const [deviceCount, gpsLogCount, sensorDataCount] = await Promise.all([
+      prisma.device.count(),
+      prisma.GpsLog.count(),
+      prisma.SensorData.count()
+    ]);
+
     if (deviceCount === 0) {
       console.log('📱 Creating sample devices...');
       
@@ -132,8 +140,7 @@ async function createSampleData() {
       console.log(`✅ Found ${deviceCount} existing devices`);
     }
 
-    // Create sample GPS logs
-    const gpsLogCount = await prisma.gpsLog.count();
+    // Create sample GPS logs if needed
     if (gpsLogCount === 0) {
       console.log('📍 Creating sample GPS logs...');
       
@@ -141,9 +148,8 @@ async function createSampleData() {
       let totalLogs = 0;
       
       for (const device of devices) {
-        // Create some GPS logs for each device
         for (let i = 0; i < 5; i++) {
-          await prisma.gpsLog.create({
+          await prisma.GpsLog.create({
             data: {
               deviceId: device.id,
               latitude: 31.2001 + (Math.random() - 0.5) * 0.01,
@@ -161,8 +167,7 @@ async function createSampleData() {
       console.log(`✅ Found ${gpsLogCount} existing GPS logs`);
     }
 
-    // Create sample sensor data
-    const sensorDataCount = await prisma.sensorData.count();
+    // Create sample sensor data if needed
     if (sensorDataCount === 0) {
       console.log('🔬 Creating sample sensor data...');
       
@@ -201,7 +206,7 @@ async function createSampleData() {
                 break;
             }
             
-            await prisma.sensorData.create({
+            await prisma.SensorData.create({
               data: {
                 deviceId: device.id,
                 sensorType,
@@ -220,16 +225,10 @@ async function createSampleData() {
     }
 
     console.log('✅ Sample data initialization complete');
-
   } catch (error) {
     console.error('❌ Sample data creation failed:', error);
     throw error;
   }
 }
 
-// Run the initialization
-if (require.main === module) {
-  initializeDatabase();
-}
-
-module.exports = { initializeDatabase, createSampleData };
+export { initializeDatabase, createSampleData };

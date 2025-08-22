@@ -394,7 +394,7 @@ main() {
     print_status "Next steps:"
     echo "1. Restart your terminal or run: source ~/.bashrc (or ~/.zshrc)"
     echo "2. Test the installation: ./setup-android-sdk.sh --verify"
-    echo "3. Start building APKs: ./build-apk.sh"
+    echo "3. Start building APKs: ./scripts/build-apk.sh"
     echo ""
     print_warning "If you encounter any issues, check the troubleshooting guide in the documentation."
 }

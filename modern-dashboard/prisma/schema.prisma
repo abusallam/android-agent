@@ -1,11 +1,11 @@
-// TacticalOps Database Schema - Supabase PostgreSQL (Primary)
+// Android Agent Database Schema - SQLite Version
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("SUPABASE_DATABASE_URL")
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
 // User Management
@@ -49,7 +49,7 @@ model Device {
   lastSeen    DateTime    @default(now())
   firstSeen   DateTime    @default(now())
   ipAddress   String?
-  location    Json?       // Current location data
+  location    String?     // JSON string for SQLite compatibility
   
   // Relations
   callLogs         CallLog[]
@@ -165,7 +165,6 @@ model GpsLog {
   device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
   
   @@map("gps_logs")
-  @@index([deviceId, timestamp])
 }
 
 // Activity Logs
@@ -250,7 +249,7 @@ model Log {
   level   LogLevel
   message String
   userId  String?
-  metadata Json?
+  metadata String? // JSON string for SQLite compatibility
   
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
   
